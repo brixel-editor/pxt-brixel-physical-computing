@@ -2,7 +2,15 @@
 
 micro:bit에서 디스플레이, 센서, 모터, 출력 장치와 통신 장치를 제어하는 BRIXEL 전체 입출력 MakeCode 확장입니다. 기존 확장의 **435개 블록, 10개 카테고리, 35개 언어 번역**을 포함합니다. micro:bit V2를 기준으로 게시·컴파일을 확인합니다.
 
-## MakeCode에 추가하기
+## 피지컬컴퓨팅 바로 시작하기
+
+**[피지컬컴퓨팅 프로젝트 열기](https://makecode.microbit.org/_Fo84JDihLTPm)**
+
+아래 QR코드를 스캔하거나 위 링크를 누른 뒤 **코드 편집**을 선택하세요. BRIXEL 피지컬컴퓨팅 확장 v0.1.0이 이미 들어 있으며, `radio`를 제외한 시작 프로젝트이므로 확장을 다시 추가하거나 radio 충돌 안내를 처리할 필요가 없습니다.
+
+[![피지컬컴퓨팅 시작 프로젝트 QR코드](docs/physical-computing-qr.png)](https://makecode.microbit.org/_Fo84JDihLTPm)
+
+## 기존 프로젝트에 확장 추가하기
 
 1. [MakeCode micro:bit](https://makecode.microbit.org/)에서 새 프로젝트를 만듭니다.
 2. **확장**을 열고 아래 주소를 검색창에 붙여 넣습니다.
