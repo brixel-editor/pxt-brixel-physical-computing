@@ -63,6 +63,10 @@ namespace Communications07 {
     // 유발한다. 그래서 P16 으로 옮긴다.
     let _irPin: DigitalPin = DigitalPin.P16
     let _irRawCode: number = 0
+let _irFrameCode: number = 0
+    /** Full NEC frame suitable for irTransmit. The legacy irRawCode returns only the command byte. */
+    //% block="IR remote frame (32 bit)" group="Infrared" weight=40
+    export function irFrameCode(): number { return _irFrameCode }
     let _irButton: number = -1
     let _irHasSignal: boolean = false
     let _irCallback: (button: number) => void = null
@@ -102,6 +106,7 @@ namespace Communications07 {
     export function irInit(pin: DigitalPin): void {
         _irPin = pin
         _irRawCode = 0
+        _irFrameCode = 0
         _irButton = -1
         _irHasSignal = false
 
@@ -125,6 +130,7 @@ namespace Communications07 {
                     // 예전에는 조립한 32비트 값을 그대로 넣어서 CH- 가 -1169719552 같은
                     // 큰 음수로 보였다(아두이노는 AVR 0xFFA25D, ESP32 0x45=69).
                     _irRawCode = cmd
+                    _irFrameCode = code
                     _irButton = irCodeToButton(cmd)
                     _irHasSignal = true
 
@@ -162,7 +168,7 @@ namespace Communications07 {
         return btn
     }
 
-    //% block="IR remote original code value"
+    //% block="IR remote command (8 bit)"
     //% group="Infrared" weight=42
     export function irRawCode(): number {
         // 8비트 NEC command 를 돌려준다 (아두이노 ESP32 경로와 같은 규약).
@@ -174,7 +180,7 @@ namespace Communications07 {
     }
 
     //% block="Is the IR remote button %button ?"
-    //% button.defl=IRButton.Num0
+    //% button.defl=Communications07.IRButton.Num0
     //% group="Infrared" weight=41
     export function irButtonIs(button: IRButton): boolean {
         // 아두이노는 (_getIRButton() == N) 으로 컴파일되므로 눌림 1회당 딱 한 번만
@@ -549,6 +555,14 @@ namespace Communications07 {
     let _gpsTime: string = ""
     let _gpsDate: string = ""
     let _gpsFix: boolean = false
+    let _gpsValidAt = -10000
+    function gpsFresh(): boolean { return control.millis() - _gpsValidAt >= 0 && control.millis() - _gpsValidAt < 3000 }
+    let _gpsFieldAt: number[] = [-10000,-10000,-10000,-10000,-10000,-10000,-10000,-10000]
+    function gpsFieldFresh(field: number): boolean {
+        if (field < 0 || field >= 8) return false
+        let age = control.millis() - _gpsFieldAt[field]
+        return age >= 0 && age < 3000
+    }
     let _gpsRawData: string = ""
     // GPSData.Time / GPSData.Date 드롭다운이 숫자로도 읽히도록 하는 값 (HHMMSS / DDMMYY)
     let _gpsTimeNum: number = 0
@@ -612,13 +626,17 @@ namespace Communications07 {
     }
 
     //% block="GPS set: serial %serialType|baud rate %baud|↳ (software serial when selected) RX pin %rx|TX pin %tx"
-    //% serialType.defl=GPSSerial.Hardware
+    //% serialType.defl=Communications07.GPSSerial.Hardware
     //% baud.defl=9600
     //% rx.defl=SerialPin.P2
     //% tx.defl=SerialPin.P1
     //% group="GPS" weight=53
     //% inlineInputMode=inline
     export function gpsInit(serialType: GPSSerial, baud: number, rx: SerialPin, tx: SerialPin): void {
+        _gpsValidAt = -10000
+        for (let i=0;i<8;i++) _gpsFieldAt[i] = -10000
+        _gpsFix = false
+        _gpsRawData = ""
         _gpsSerial = serialType
         _gpsTx = tx
         _gpsRx = rx
@@ -691,6 +709,8 @@ namespace Communications07 {
     //% block="GPS value read %dataType"
     //% group="GPS" weight=51
     export function gpsRead(dataType: GPSData): number {
+        if (!gpsFieldFresh(dataType)) return -9999
+        if (dataType <= GPSData.Course && !_gpsFix) return -9999
         switch (dataType) {
             case GPSData.Latitude: return _gpsLatitude
             case GPSData.Longitude: return _gpsLongitude
@@ -715,11 +735,11 @@ namespace Communications07 {
         // 터널/실내로 들어가 측위가 끊기면 거짓으로 되돌아간다.
         // micro:bit 쪽 의미가 더 유용하다고 판단해 그대로 두되, 아두이노 프로그램을
         // 옮겨 올 때 분기가 달라질 수 있다는 점을 여기 남긴다.
-        return _gpsFix
+        return gpsFresh() && _gpsFix && gpsFieldFresh(GPSData.Latitude) && gpsFieldFresh(GPSData.Longitude)
     }
 
     //% block="calculate two coordinates|calc type %calcType|latitude1 %lat1|longitude1 %lon1|latitude2 %lat2|longitude2 %lon2"
-    //% calcType.defl=GPSCalcType.DistanceMeters
+    //% calcType.defl=Communications07.GPSCalcType.DistanceMeters
     //% lat1.defl=37.5665 lon1.defl=126.978
     //% lat2.defl=35.1796 lon2.defl=129.0756
     //% group="GPS" weight=49
@@ -765,85 +785,60 @@ namespace Communications07 {
     //% block="GPS time (UTC)"
     //% group="GPS" weight=47
     export function gpsGetTime(): string {
+        if (!gpsFieldFresh(GPSData.Time)) return ""
         return _gpsTime
     }
 
     //% block="GPS date"
     //% group="GPS" weight=46
     export function gpsGetDate(): string {
+        if (!gpsFieldFresh(GPSData.Date)) return ""
         return _gpsDate
     }
 
-    // GPGGA 문장 파싱 (내부 함수)
+    function gpsTimeField(value: string): void {
+        if (value.length < 6) return
+        let hh=parseInt(value.substr(0,2)), mm=parseInt(value.substr(2,2)), ss=parseInt(value.substr(4,2))
+        if (!(hh>=0 && hh<24 && mm>=0 && mm<60 && ss>=0 && ss<=60)) return
+        _gpsTime=value.substr(0,2)+":"+value.substr(2,2)+":"+value.substr(4,2)
+        _gpsTimeNum=hh*10000+mm*100+ss; _gpsFieldAt[GPSData.Time]=control.millis()
+    }
+    function gpsPositionFields(lat: string, ns: string, lon: string, ew: string): boolean {
+        if (lat.length<4 || lon.length<5 || (ns!="N" && ns!="S") || (ew!="E" && ew!="W")) return false
+        let latMin=parseFloat(lat.substr(2)), lonMin=parseFloat(lon.substr(3))
+        let latitude=parseFloat(lat.substr(0,2))+latMin/60, longitude=parseFloat(lon.substr(0,3))+lonMin/60
+        if (!(latMin>=0 && latMin<60 && lonMin>=0 && lonMin<60 && latitude>=0 && latitude<=90 && longitude>=0 && longitude<=180)) return false
+        _gpsLatitude=ns=="S"?-latitude:latitude; _gpsLongitude=ew=="W"?-longitude:longitude
+        _gpsFieldAt[GPSData.Latitude]=control.millis(); _gpsFieldAt[GPSData.Longitude]=control.millis()
+        return true
+    }
+    // Each field expires independently: receiving only RMC must not refresh an old GGA altitude.
     function parseGPGGA(sentence: string): void {
-        let parts = sentence.split(",")
-        if (parts.length < 10) return
-
-        // 시간 (HHMMSS.sss)
-        if (parts[1].length >= 6) {
-            _gpsTime = parts[1].substr(0, 2) + ":" + parts[1].substr(2, 2) + ":" + parts[1].substr(4, 2)
-            // FIX 전에는 parts[1] 이 비어 있으므로 반드시 이 길이 검사 안에서만 변환한다
-            _gpsTimeNum = parseInt(parts[1].substr(0, 6))
-        }
-
-        // 위도
-        if (parts[2].length > 0) {
-            let latDeg = parseFloat(parts[2].substr(0, 2))
-            let latMin = parseFloat(parts[2].substr(2))
-            _gpsLatitude = latDeg + latMin / 60
-            if (parts[3] == "S") _gpsLatitude = -_gpsLatitude
-        }
-
-        // 경도
-        if (parts[4].length > 0) {
-            let lonDeg = parseFloat(parts[4].substr(0, 3))
-            let lonMin = parseFloat(parts[4].substr(3))
-            _gpsLongitude = lonDeg + lonMin / 60
-            if (parts[5] == "W") _gpsLongitude = -_gpsLongitude
-        }
-
-        // Fix 상태 (0=없음, 1=GPS, 2=DGPS)
-        _gpsFix = parseInt(parts[6]) > 0
-
-        // 위성 수
-        // 아두이노는 빈 term 을 아예 건너뛰어 직전 값을 유지한다(TinyGPS++.cpp:227).
-        // 길이 검사 없이 parseInt("") 를 하면 NaN 이 들어가 LED 에 "NaN" 이 뜨고
-        // 이후 계산이 전부 오염됐다. 옆 필드들과 같은 방식으로 막는다.
-        if (parts[7].length > 0) {
-            _gpsSatellites = parseInt(parts[7])
-        }
-
-        // 고도
-        if (parts[9].length > 0) {
-            _gpsAltitude = parseFloat(parts[9])
-        }
+        let parts=sentence.split(",")
+        if(parts.length<10)return
+        _gpsValidAt=control.millis(); gpsTimeField(parts[1])
+        _gpsFix=parseInt(parts[6])>0
+        if(_gpsFix)_gpsFix=gpsPositionFields(parts[2],parts[3],parts[4],parts[5])
+        let satellites=parseInt(parts[7])
+        if(satellites>=0 && satellites<=99) { _gpsSatellites=satellites; _gpsFieldAt[GPSData.Satellites]=control.millis() }
+        let altitude=parseFloat(parts[9])
+        if(_gpsFix && BrixelInternal.finite(altitude)) { _gpsAltitude=altitude; _gpsFieldAt[GPSData.Altitude]=control.millis() }
     }
-
-    // GPRMC 문장 파싱 (내부 함수)
     function parseGPRMC(sentence: string): void {
-        let parts = sentence.split(",")
-        if (parts.length < 10) return
-
-        // 상태 (A=유효, V=무효)
-        _gpsFix = (parts[2] == "A")
-
-        // 속도 (노트 → km/h)
-        if (parts[7].length > 0) {
-            _gpsSpeed = parseFloat(parts[7]) * 1.852
-        }
-
-        // 방향
-        if (parts[8].length > 0) {
-            _gpsCourse = parseFloat(parts[8])
-        }
-
-        // 날짜 (DDMMYY)
-        if (parts[9].length >= 6) {
-            _gpsDate = parts[9].substr(0, 2) + "/" + parts[9].substr(2, 2) + "/20" + parts[9].substr(4, 2)
-            _gpsDateNum = parseInt(parts[9].substr(0, 6))
+        let parts=sentence.split(",")
+        if(parts.length<10)return
+        _gpsValidAt=control.millis(); gpsTimeField(parts[1])
+        _gpsFix=parts[2]=="A"
+        if(_gpsFix)_gpsFix=gpsPositionFields(parts[3],parts[4],parts[5],parts[6])
+        let speed=parseFloat(parts[7]), course=parseFloat(parts[8])
+        if(_gpsFix && BrixelInternal.finite(speed) && speed>=0) { _gpsSpeed=speed*1.852; _gpsFieldAt[GPSData.Speed]=control.millis() }
+        if(_gpsFix && course>=0 && course<360) { _gpsCourse=course; _gpsFieldAt[GPSData.Course]=control.millis() }
+        let date=parts[9], day=parseInt(date.substr(0,2)), month=parseInt(date.substr(2,2)), year=parseInt(date.substr(4,2))
+        if(date.length>=6 && day>=1 && day<=31 && month>=1 && month<=12 && year>=0 && year<=99) {
+            _gpsDate=date.substr(0,2)+"/"+date.substr(2,2)+"/20"+date.substr(4,2)
+            _gpsDateNum=day*10000+month*100+year; _gpsFieldAt[GPSData.Date]=control.millis()
         }
     }
-
 
     /********** MFRC522 RFID 리더 **********/
 

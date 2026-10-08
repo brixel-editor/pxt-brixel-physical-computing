@@ -107,8 +107,8 @@ namespace OutputDevice {
 
     //% block="buzzer: Plays the note $note on digital pin $pin at the beat $beat "
     //% pin.defl=DigitalPin.P0
-    //% note.defl=MusicNote.C4
-    //% beat.defl=MusicBeat.Quarter
+    //% note.defl=OutputDevice.MusicNote.C4
+    //% beat.defl=OutputDevice.MusicBeat.Quarter
     //% group="Buzzer" weight=98
     //% inlineInputMode=inline
     export function buzzerPlayNote(pin: DigitalPin, note: MusicNote, beat: MusicBeat): void {
@@ -244,7 +244,7 @@ namespace OutputDevice {
      * @param volume initial volume (0-30)
      */
     //% block="MP3 (KT403A) setup: device %device, RX %rx, TX %tx, initial volume (0~30) %volume"
-    //% device.defl=KT403ADevice.SDCard
+    //% device.defl=OutputDevice.KT403ADevice.SDCard
     //% rx.defl=SerialPin.P2
     //% tx.defl=SerialPin.P1
     //% volume.defl=20 volume.min=0 volume.max=30
@@ -325,7 +325,7 @@ namespace OutputDevice {
      * @param control control command
      */
     //% block="MP3 control %control"
-    //% control.defl=KT403AControl.Next
+    //% control.defl=OutputDevice.KT403AControl.Next
     //% group="MP3 Player (KT403A)" weight=96
     export function kt403aControl(control: KT403AControl): void {
         switch (control) {

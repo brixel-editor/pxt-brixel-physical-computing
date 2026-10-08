@@ -581,7 +581,7 @@ namespace AdvSensors {
     }
 
     //% block="MPU6050 read: %dtype"
-    //% dtype.defl=MPU6050DataType.Temperature
+    //% dtype.defl=AdvSensors.MPU6050DataType.Temperature
     //% group="6축 가속도(MPU6050)" weight=163
     export function mpu6050ReadValue(dtype: MPU6050DataType): number {
         if (dtype == MPU6050DataType.Temperature) return _mpu6050Temp
@@ -750,13 +750,14 @@ namespace AdvSensors {
         return crc
     }
 
-    let _sgp30InitAt = 0        // Init_air_quality 시각
-    let _sgp30LastMs = 0        // 마지막 측정 시각 (1초 스로틀용)
+    let _sgp30InitAt = -1        // Init_air_quality 시각
+    let _sgp30LastMs = -1000
+    let _sgp30ValidAt = -10000        // 마지막 측정 시각 (1초 스로틀용)
 
     //% block="SGP30 warmed up? (15s)"
     //% group="CO2센서(SGP30)" weight=77
     export function sgp30Ready(): boolean {
-        return _sgp30InitAt > 0 && (control.millis() - _sgp30InitAt) >= 15000
+        return _sgp30InitAt >= 0 && (control.millis() - _sgp30InitAt) >= 15000
     }
 
     //% block="SGP30 init"
@@ -767,6 +768,10 @@ namespace AdvSensors {
         // ★ 데이터시트상 초기화 후 15초 동안은 고정값(eCO2 400 / TVOC 0)만 나온다.
         //   예전에는 10ms 만 기다리고 바로 유효값처럼 읽었다. sgp30Ready() 로 확인할 것.
         _sgp30InitAt = control.millis()
+        _sgp30LastMs = -1000
+        _sgp30ValidAt = -10000
+        _sgp30eCO2 = -1
+        _sgp30TVOC = -1
         basic.pause(10)
     }
 
@@ -775,8 +780,9 @@ namespace AdvSensors {
     export function sgp30Measure(): void {
         // ★ SGP30 의 동적 베이스라인 알고리즘은 1초 주기 호출을 전제로 한다.
         //   forever 루프에서 수십 ms 간격으로 부르면 베이스라인이 망가진다. 내부에서 스로틀.
+        if (_sgp30InitAt < 0) return
         let now = control.millis()
-        if (_sgp30LastMs > 0 && (now - _sgp30LastMs) < 1000) return
+        if ((now - _sgp30LastMs) < 1000) return
         _sgp30LastMs = now
 
         // IAQ 측정 명령
@@ -786,16 +792,21 @@ namespace AdvSensors {
         // 결과 읽기 (6바이트: eCO2 + CRC + TVOC + CRC)
         let buf = pins.i2cReadBuffer(_sgp30Addr, 6)
 
-        // ★ CRC 검증 — 깨진 프레임은 버리고 직전 값을 유지한다
+        // CRC failure invalidates both reporters immediately.
+        _sgp30eCO2 = -1
+        _sgp30TVOC = -1
+        _sgp30ValidAt = -10000
         if (crc8Sensirion(buf[0], buf[1]) != buf[2] || crc8Sensirion(buf[3], buf[4]) != buf[5]) return
 
         _sgp30eCO2 = (buf[0] << 8) | buf[1]
         _sgp30TVOC = (buf[3] << 8) | buf[4]
+        _sgp30ValidAt = control.millis()
     }
 
     //% block="SGP30 read %stype"
     //% group="CO2센서(SGP30)" weight=153
     export function sgp30Read(stype: SGP30Type): number {
+        if (!sgp30Ready() || control.millis() - _sgp30ValidAt > 2500) return -1
         if (stype == SGP30Type.eCO2) {
             return _sgp30eCO2
         }

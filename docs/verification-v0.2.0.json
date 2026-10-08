@@ -1,0 +1,263 @@
+{
+  "checkedAt": "2026-10-08T08:09:34.322Z",
+  "version": "0.2.0",
+  "blocks": 476,
+  "per": {
+    "Displays01": 29,
+    "AdvDisplays": 60,
+    "Sensors03": 131,
+    "AdvSensors": 92,
+    "Actuators05": 52,
+    "OutputDevice": 35,
+    "Communications07": 40,
+    "WiFi08": 12,
+    "USBSerial": 14,
+    "Bluetooth10": 11
+  },
+  "enumMembers": 389,
+  "nsBlocks": 10,
+  "sum": 875,
+  "groups": 81,
+  "locales": 35,
+  "newBlockTranslations": "Korean; English fallback for other locales",
+  "preservedOriginalBlockSignatures": 435,
+  "preservedOriginalEnums": true,
+  "originalCheckoutUnchanged": true,
+  "physicalHardwareTested": false,
+  "build": "passed --hw mbcodal",
+  "profiles": [
+    {
+      "name": "TFT and heart rate",
+      "testSHA256": "29f8763f9240128237c4649295308537feeb955f4fc1582ca2ef19c2172a56e7",
+      "result": "passed"
+    },
+    {
+      "name": "Calibration, native dust, PCA9685 and WebSocket",
+      "testSHA256": "1fd23f628cdd264befb1788510c5e6ce6f9e180381aa9c1c809873fd595c6208",
+      "result": "passed"
+    },
+    {
+      "name": "Ten-category integration",
+      "testSHA256": "a44a792b190b889a69994fedfb668b9d35af33312e1b7261da81d128a4b86bb5",
+      "result": "passed"
+    }
+  ],
+  "pxtMicrobit": "9.1.1",
+  "pxtCore": "13.0.1",
+  "compiledSources": {
+    "main.ts": "7ec8f9522df0b060db6d5d9a174c029a0fd6a05811272bdddfa89aed47a9518d",
+    "01_displays.ts": "732a6d92042c93826f755ad4ad4c82038f9b097d284e86b20cf3ff8cbc43a32d",
+    "02_adv_displays.ts": "2be76ea4450cc6411636220302f0a48b39feabd650776748175548d0843227bd",
+    "02_adv_displays_part2.ts": "77b98364ef6082b9f1f7fe651988275164b1728bbca2741051e6fa1754519018",
+    "03_sensors.ts": "bfd8f32d176ae7c9b712b6a4604fcc5654b3091a003dcb36b2df993d8e3d1984",
+    "03_sensors_part2.ts": "79f206351d659d5b5a1b78a3c94aa6586fa0cce96dcfdcc0ba7d9f4def7f79d5",
+    "03_sensors_part3.ts": "7a9fda32478111e48c95d26cb61055a640aaa98df48096bbf1c57b54847df829",
+    "04_adv_sensors.ts": "c53a31afeeb07fa9f447c1d538299064a13d78638c51ff8749048dc2680dfc21",
+    "04_adv_sensors_part2.ts": "dffdcdce097d5cec4772aad21037aad6e0f57764c020a40c157acc1f4c86b1d5",
+    "04_adv_sensors_part3.ts": "ce42c026b6dd2cc815661a3f97102c49e379218310b20057c26e31819d0407ff",
+    "04_adv_sensors_part4.ts": "6eeabfc9b56b4ca4f5fbb83a81005405752ccb6e6d88f4100e2491602043f6bc",
+    "05_actuators.ts": "329d8c1c91f815e21347eeeb085eecfaa0cfb3c3a556f49b2fddc374de333eb7",
+    "06_output_device.ts": "2146b63844d64946d391e8276825be1fe9d16397542ffb7b7be3fa0cc842ec7c",
+    "07_communications.ts": "1705f5b41308860bb1dec2451d8ac5292f9477b4b3b699eb8f5295bebb829bb7",
+    "08_wifi.ts": "e74b889768f6e2b04a4bd4a2489d299d6e7b547bba31f91ba4bde79de88c54f9",
+    "09_usb_serial.ts": "39d416a398e86bcd6fa57c862aab0aca6391f15959812545f0a8885db7f80cdb",
+    "10_bluetooth.ts": "24ee20f83219d5be9ea2d8526a1476e8352e8bb78f6306fb1a7b21680483b42f",
+    "_locales/en/brixel-physical-computing-strings.json": "5a1bacea6ee1b461d861724ee2000c321f188884d45da3434a3bc3bf802b91fb",
+    "_locales/ko/brixel-physical-computing-strings.json": "86ed4fb9a9d75c20f7cc4170b295701fc557d22e8050af223755769b7ec1d1eb",
+    "_locales/ko/brixel-physical-computing-jsdoc-strings.json": "8243371357b6f94c6f4b68bd53faf15bff1d786d26518d3cf25863e5b2c2a671",
+    "_locales/ar/brixel-physical-computing-strings.json": "67b9740799665dfe10d221920513cc4cc6d86ca1f4901341bed346499b38b7d9",
+    "_locales/ar/brixel-physical-computing-jsdoc-strings.json": "0e690a8a01e93588406bb3b949df856dc2bb631275e686d30043bc0e1f1fa332",
+    "_locales/bg/brixel-physical-computing-strings.json": "8511cd42cd32ba3f8c8854eb51f836119802089021099dd927086fa1d7d8bbde",
+    "_locales/bg/brixel-physical-computing-jsdoc-strings.json": "4aabe26000213a41fb7e4c1b9be3b61200760f393735d110a36099f5fd0051ef",
+    "_locales/ca/brixel-physical-computing-strings.json": "68d07141d0ee341e48452760558da5df6b3d4caa99d210f90a938e5fe50f7aef",
+    "_locales/ca/brixel-physical-computing-jsdoc-strings.json": "f61e26c437b8307fb0f0f47204b1640b1def14c950a78b7ca0eb2640c3b94e45",
+    "_locales/cs/brixel-physical-computing-strings.json": "4c5341354c74a96c1be9e4303f9be4e7ea18e4d8e136bb4c533fdb5d35518db1",
+    "_locales/cs/brixel-physical-computing-jsdoc-strings.json": "a696076d3160df5db272fee4dc3f5da6e87078388478e9e2f861cb4e98d9ba3a",
+    "_locales/cy/brixel-physical-computing-strings.json": "a6810b9b0c0293bb554c49a5c84a0c481f8e0774b87516ea69051895ba86e07c",
+    "_locales/cy/brixel-physical-computing-jsdoc-strings.json": "d3522940345fdb5fb4e1560b310cad8cbf10c327b6b020297905d8057b6061f5",
+    "_locales/da/brixel-physical-computing-strings.json": "ed69fba371fd757e89f5347403c6d3bc8a978bd7474381f04db596df67049aa1",
+    "_locales/de/brixel-physical-computing-strings.json": "23ef5c5ff0f8cdeb80a45bd0f1c65af731d06fd73ec949b4d3be782c6d171eb9",
+    "_locales/de/brixel-physical-computing-jsdoc-strings.json": "a2fb8e7131f32c7be4352f59781546cc75d194dab461269c33872a43de6a7f9a",
+    "_locales/el/brixel-physical-computing-strings.json": "c7664df6c8b5560d27b34028151365b246dc235694ef54a9e647926a817d25dc",
+    "_locales/el/brixel-physical-computing-jsdoc-strings.json": "0dfc62ab9c6b80dd03e58dc41e2316f300898a21567a4577aceb01e135dc1ef2",
+    "_locales/es-ES/brixel-physical-computing-strings.json": "e71084f9842f1d843f43b7d7ede1093e59dfd8e9ae4c9734efdbd8cc01c23226",
+    "_locales/es-ES/brixel-physical-computing-jsdoc-strings.json": "3950e374eb7199058a610f3da9b451d125e31acb276a0011753381b50b3f8434",
+    "_locales/fi/brixel-physical-computing-strings.json": "c8f6360ee028d754da1b8fa7824d57a7a33d2f23f6a89dd8353e408001ad120c",
+    "_locales/fi/brixel-physical-computing-jsdoc-strings.json": "f4ea2100d7467718410aae02b703c3fe26ec4b4512422a46b3232dfa4a0b8d8a",
+    "_locales/fr/brixel-physical-computing-strings.json": "00df84b6efcee1e8a382acec884b75c7e56085a94b0f775b104c64890876e587",
+    "_locales/fr/brixel-physical-computing-jsdoc-strings.json": "8ba235c23b4150dba9ad9a480ab9633dbf881d1342907dd2e38b74a06359e604",
+    "_locales/gn/brixel-physical-computing-strings.json": "9c70f820637c364f764c043809201caaaf25369cec37c08a9a4155469c7b3407",
+    "_locales/gn/brixel-physical-computing-jsdoc-strings.json": "c0886bf6546ccb7797c000f62c222d54cc98a764249071ea20824a4a4e775e1a",
+    "_locales/he/brixel-physical-computing-strings.json": "eb88c97e133510254401bad009b7c1c1dfd7044b8c369da411a5e8111e6baa11",
+    "_locales/he/brixel-physical-computing-jsdoc-strings.json": "5733fc86a1e50e409686a040b26ce2f5f523b3b87c411101f203e64543223802",
+    "_locales/hu/brixel-physical-computing-strings.json": "fd44a4788aec01f4c8f0eab525acd2b821cd9bb357fe2ea800ce24844cb1c19f",
+    "_locales/hu/brixel-physical-computing-jsdoc-strings.json": "a9892baebe3e6e18585d1ca4b18c64ff7dcb67f66e318f126d285de902bf7b4b",
+    "_locales/is/brixel-physical-computing-strings.json": "0e01b99f6f2dcf521ff87848224122740ac795db641a1c801d126539a3d01849",
+    "_locales/is/brixel-physical-computing-jsdoc-strings.json": "ead74ff73f216efafdb853e83e6d4b1b6e3e6c7f812cf82da08f82736770250c",
+    "_locales/it/brixel-physical-computing-strings.json": "1d73267d21514dcdb6fbfceca4542a7036262148026ee77260c79886bc2e16c8",
+    "_locales/it/brixel-physical-computing-jsdoc-strings.json": "8d7e8012db666dec5942cd2d5764d30428e49bb4e702690c45c51071d708126b",
+    "_locales/ja/brixel-physical-computing-strings.json": "bf79bafe5ef9757a311eb23a4853d746a830962e5d632b137b2040f31f2cbc15",
+    "_locales/ja/brixel-physical-computing-jsdoc-strings.json": "e40ee0a03289efbd7a01dd462b1a6d17b9902a365f5a9bcabcce9ce4b86acbb5",
+    "_locales/nl/brixel-physical-computing-strings.json": "804627ae8caa9f40a2199272bf4e01f41f9049018a5b96845f79b1c9c326a646",
+    "_locales/nl/brixel-physical-computing-jsdoc-strings.json": "13c6917c8f7bfdcb08cb0a9677f509dd02c560d04e31b772b08b7011e9e180fb",
+    "_locales/nb/brixel-physical-computing-strings.json": "74e35443e75676035f37b1cc102f00487de698540c4c3d2661b6b864329ef0a5",
+    "_locales/nn/brixel-physical-computing-strings.json": "0283f3231e8dbd55ce1e73df0d2f73d5891b2562acdd68c8343f90324d9482af",
+    "_locales/pl/brixel-physical-computing-strings.json": "8fcb2bc36093a6042796eb1c73bf2391a209bd17db4a25baf49966b07cef3e91",
+    "_locales/pl/brixel-physical-computing-jsdoc-strings.json": "58b8d5b60376c7db202cde5675f02da3ef9045b47edd91cef375befc30c45fc9",
+    "_locales/pt-BR/brixel-physical-computing-strings.json": "689da10c408073cc836aae9e8e4a0f2f18dc8e19d9945e24a43bfd1451b29b7b",
+    "_locales/pt-BR/brixel-physical-computing-jsdoc-strings.json": "1632d957b31d3237ea2e8983fb7cb08aacc46b3fb6738995b376c9ccc62e5e3b",
+    "_locales/pt-PT/brixel-physical-computing-strings.json": "764069603feebe1c4fcd4369300877b832dff8200c757f18993dab0534c03b40",
+    "_locales/pt-PT/brixel-physical-computing-jsdoc-strings.json": "bb4a867f32a795b42fc7908d616671808285ec88f9fd7f8256c1b983b05b0a28",
+    "_locales/ru/brixel-physical-computing-strings.json": "323ba9f4b15821424f2931d54c0a0d9434cc2d51080497f2b8c8a452d5493ffd",
+    "_locales/ru/brixel-physical-computing-jsdoc-strings.json": "45f393368626aa5e166dfbf856f6fc66a86b768e49fe8da50d23868a2216e59b",
+    "_locales/si/brixel-physical-computing-strings.json": "cfb19a21c798f9887ad483b59db99407841c48d1db1e48436b350c1e6248500f",
+    "_locales/si/brixel-physical-computing-jsdoc-strings.json": "6904b92e182e2f352a927e27ea3d58d570597311b0caa9e44b7b061a78f234a5",
+    "_locales/sk/brixel-physical-computing-strings.json": "d49e889af9b17af6983acac0e5fc40fba9dfc5475ccce622a678f1853715641e",
+    "_locales/sk/brixel-physical-computing-jsdoc-strings.json": "d73ded0258c3db95e29befd759e7d6355116d54047b2c613cba80219cbdc7c56",
+    "_locales/sr/brixel-physical-computing-strings.json": "c78ee70d22e689a02229cb93f684a814918d7fc300f82f6ccdd0021717648248",
+    "_locales/sr/brixel-physical-computing-jsdoc-strings.json": "f98c964492325233872da9ac2f1e4e4e9ba893e0eb95b9f3e1ab7434ece76905",
+    "_locales/sv/brixel-physical-computing-strings.json": "0a3a339850b6d70bc32e739cd4fbdc3ed4753e59ed3566e31d00229450f9ad7d",
+    "_locales/sv/brixel-physical-computing-jsdoc-strings.json": "405f3922af4f0c0403782b46e62828f71a89a3bc187ec3da9866678218212ceb",
+    "_locales/tr/brixel-physical-computing-strings.json": "2718410eddfbb7ba7ba7f8d1965387024f1f59d7e0f061871a0f28cd330953ba",
+    "_locales/tr/brixel-physical-computing-jsdoc-strings.json": "9ecb34b70c466b4423a3eb64f1b1809f53410d56d25ce1b4955ec4fdb37034a0",
+    "_locales/uk/brixel-physical-computing-strings.json": "474ee146ee1f2c61e8177861526e21358c6ea8e96f9822d49df0d0083b76dc90",
+    "_locales/uk/brixel-physical-computing-jsdoc-strings.json": "3a02d3338935faad4d01ffc27c6cb904200b3b467c4e408807faada0adada1ea",
+    "_locales/vi/brixel-physical-computing-strings.json": "968bdc21bd09eda950dbadef6194b680f3ac5ff3cf2c207f2f5e068a8bf519d8",
+    "_locales/vi/brixel-physical-computing-jsdoc-strings.json": "df83bb3c3cc08fa21f0688193e85cc46af86540ff1b3dea1c2e0aa52dd6aca1e",
+    "_locales/zh-CN/brixel-physical-computing-strings.json": "32f17a5c74467d8c7e29723401ae85457f138efe252a9a53c2b7178d170fe007",
+    "_locales/zh-TW/brixel-physical-computing-strings.json": "04531b563fad5914253a4d3ae01e6995936a4005980cb14536c6666fe0805ac8",
+    "README.md": "6eec216762066e30a47004d61c418da714255c3b4ebac20a159b12912b928aa5",
+    "SOURCES.md": "3b48953c78a6490c518396581cfb2786dd2d9fb54cb49e9a94312b4f3eb88fac",
+    "11_science_support.ts": "7aaf42939d58d1a2a75fcec63cc13ac24c649916181b7ef41950fdaedfba3521",
+    "11_basic_sensors.ts": "6849c61cd228be722c19601efdb5949a8a494df0617c8b246938792dca8a8458",
+    "11_science_calibration.ts": "a58c0f75a131863b17d0652c4e75453ded41c2efd96806bf3d75cbf95342cfc8",
+    "11_native.ts": "f2d4d7ea1850b92f25ca0e246c6ba804b3cba82e5f5923f779df1ab2ee152ecb",
+    "native-dust.cpp": "acc37ad111d8be98b83bdf5b979df055053d425848f5dd4f0899b70015080793",
+    "12_pca9685_servo.ts": "a145e6881f3ac33fe34988f3031d61ea1582234227b443ba7fe355ced605bfc8",
+    "12_websocket.ts": "bf930e6cf66186527fb0f8902648f4952fa0ac3bcb1309c9760bc0bef5cc29d9",
+    "test.ts": "a44a792b190b889a69994fedfb668b9d35af33312e1b7261da81d128a4b86bb5",
+    "pxt.json": "12e2e8cd010e1b08ce1c885fc551c331073c4293564b7ad4cc62369a8b395670"
+  },
+  "hexSHA256": "91c07acc05bc71776fafe2a4d8a64e4379b4c2ed9635d9e08db881d038d79844",
+  "runtimeTests": {
+    "checkedAt": "2026-10-08T08:09:35.252Z",
+    "passed": 28,
+    "failed": 0,
+    "hardwareTested": false,
+    "results": [
+      {
+        "name": "ADC voltage divider: 0V / half / full scale",
+        "passed": true
+      },
+      {
+        "name": "HC-SR04: 5831us equals 100cm",
+        "passed": true
+      },
+      {
+        "name": "MAX30102: stale data must clear finger/ready",
+        "passed": true
+      },
+      {
+        "name": "GPS: valid NMEA then receive timeout clears FIX",
+        "passed": true
+      },
+      {
+        "name": "GPS: RMC updates coordinates/time; unrelated fields expire; void status invalidates location",
+        "passed": true
+      },
+      {
+        "name": "MH-Z19D: init preserves ABC, warm-up, good frame, CRC error and timeout",
+        "passed": true
+      },
+      {
+        "name": "Turbidity: uncalibrated must not report clean-water zero",
+        "passed": true
+      },
+      {
+        "name": "RTC: setting writes BCD and starts clock",
+        "passed": true
+      },
+      {
+        "name": "WCS2801: zero, reference, signed current, range and recalibration failure",
+        "passed": true
+      },
+      {
+        "name": "Voltage calibration: zero is valid, saturation and unstable reference rejected",
+        "passed": true
+      },
+      {
+        "name": "AZDM01: relative transmission and failed re-zero",
+        "passed": true
+      },
+      {
+        "name": "UV: voltage works uncalibrated; index and irradiance references are independent",
+        "passed": true
+      },
+      {
+        "name": "Dust: 8-sample raw mean, invalid pins and sampling failure",
+        "passed": true
+      },
+      {
+        "name": "PCA9685: 50Hz, channel16 register, full-off, invalid inputs cause no writes",
+        "passed": true
+      },
+      {
+        "name": "PCA9685: DC then servo then DC restores shared chip frequency",
+        "passed": true
+      },
+      {
+        "name": "APDS9960: both reporter styles share one FIFO gesture and expiry",
+        "passed": true
+      },
+      {
+        "name": "WebSocket: RFC handshake SHA1 vector and split request",
+        "passed": true
+      },
+      {
+        "name": "WebSocket: masked Korean text, TCP split, continuation and ping/pong",
+        "passed": true
+      },
+      {
+        "name": "WebSocket: reject unmasked/oversize/invalid UTF8 and keep clients separate",
+        "passed": true
+      },
+      {
+        "name": "WebSocket: invalid upgrade rejected; closed socket requires handshake again",
+        "passed": true
+      },
+      {
+        "name": "HC-SR04: no echo is failure, not 0cm",
+        "passed": true
+      },
+      {
+        "name": "US-100: no echo is failure, not 0cm",
+        "passed": true
+      },
+      {
+        "name": "MH-Z19 status: missing response is unknown, not cached default",
+        "passed": true
+      },
+      {
+        "name": "CCS811: data ready, sibling reporter cache, stale and error invalidation",
+        "passed": true
+      },
+      {
+        "name": "SGP30: startup, warmup, CRC, measurement freshness and restart",
+        "passed": true
+      },
+      {
+        "name": "WebSocket: invalid token, close payload and nonminimal length rejected",
+        "passed": true
+      },
+      {
+        "name": "ESP-AT transport: split IPD, UTF8 byte length, prompt and SEND OK",
+        "passed": true
+      },
+      {
+        "name": "ESP-AT transport: IPD payload cannot fake prompt or SEND OK",
+        "passed": true
+      }
+    ]
+  },
+  "runtimeTestSHA256": "3854863c8e49769f696026134518ec3b51bca4f00e8d0b15a9e20c3cbc802995"
+}

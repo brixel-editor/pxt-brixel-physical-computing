@@ -9,7 +9,7 @@
  */
 
 //% weight=1060 color=#50B91A icon="\uf013" block="05. Actuators"
-//% groups='["DC모터(L9110)","Servo Motors","5Kg GeekServo","Green GeekServo","Stepper Motors","DC모터(L298N)","DC모터(L293D)","듀얼 H-브리지 모터(TB6612FNG)","듀얼 H-브리지 DC 모터(DRV8833)","DC모터 드라이버(PCA9685)"]'
+//% groups='["DC모터(L9110)","Servo Motors","5Kg GeekServo","Green GeekServo","Stepper Motors","DC모터(L298N)","DC모터(L293D)","듀얼 H-브리지 모터(TB6612FNG)","듀얼 H-브리지 DC 모터(DRV8833)","DC모터 드라이버(PCA9685)","서보 드라이버(PCA9685)"]'
 namespace Actuators05 {
 
 
@@ -925,6 +925,7 @@ namespace Actuators05 {
     // PCA9685 초기화
     // 아두이노 Adafruit_PWMServoDriver 의 reset() + setPWMFreq(1000) 순서를 그대로 따른다.
     function pca9685Init(addr: number): void {
+        pca9685RememberFrequency(addr, 1000)
         // reset(): MODE1 에 RESTART(0x80) 를 쓰고 10ms 대기
         let buf = pins.createBuffer(2)
         buf[0] = PCA9685_MODE1
@@ -964,7 +965,8 @@ namespace Actuators05 {
     // 모든 레지스터 쓰기가 LED0_ON_L 한 곳에 쏟아져 조용히 망가진다.
     // _pca9685Initialized 는 기록만 하고 아무도 읽지 않았으므로 여기서 사용한다.
     function pca9685Ensure(i: number): number {
-        if (!_pca9685Initialized[i]) {
+        if (i < 0 || i > 3 || i != Math.floor(i)) return -1
+        if (!_pca9685Initialized[i] || pca9685Frequency(_pca9685Addr[i]) != 1000) {
             pca9685Init(_pca9685Addr[i])
             _pca9685Initialized[i] = true
         }
@@ -987,6 +989,7 @@ namespace Actuators05 {
     //% group="DC모터 드라이버(PCA9685)" weight=50
     //% inlineInputMode=inline
     export function pca9685DcMotorSetup(index: number, addr: number): void {
+        if (index < 1 || index > 4 || index != Math.floor(index) || addr < 0x40 || addr > 0x7f || addr == 0x70 || addr != Math.floor(addr)) return
         let i = index - 1
         _pca9685Addr[i] = addr
         pca9685Init(addr)
@@ -1002,6 +1005,7 @@ namespace Actuators05 {
     export function pca9685DcMotorWheelA(index: number, dir: number, speed: number): void {
         let i = index - 1
         let addr = pca9685Ensure(i)
+        if (addr < 0) return
         let spd = Math.map(Math.constrain(speed, 0, 100), 0, 100, 0, 4095)
 
         // CH0: IN1, CH1: PWM(속도), CH2: IN2
@@ -1025,6 +1029,7 @@ namespace Actuators05 {
     export function pca9685DcMotorWheelB(index: number, dir: number, speed: number): void {
         let i = index - 1
         let addr = pca9685Ensure(i)
+        if (addr < 0) return
         let spd = Math.map(Math.constrain(speed, 0, 100), 0, 100, 0, 4095)
 
         // CH3: IN1, CH4: PWM(속도), CH5: IN2 - B모터 방향 반전
@@ -1046,6 +1051,7 @@ namespace Actuators05 {
     export function pca9685DcMotorStop(index: number, target: PCA9685StopTarget): void {
         let i = index - 1
         let addr = pca9685Ensure(i)
+        if (addr < 0) return
 
         if (target == PCA9685StopTarget.All || target == PCA9685StopTarget.WheelA) {
             pca9685SetPin(addr, 0, 0)

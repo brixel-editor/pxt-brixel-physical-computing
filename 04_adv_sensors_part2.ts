@@ -39,7 +39,7 @@ namespace AdvSensors {
     }
 
     //% block="Color sensor detect %dtype"
-    //% dtype.defl=TCS34725DetectType.Color
+    //% dtype.defl=AdvSensors.TCS34725DetectType.Color
     //% group="색상감지(TCS34725)" weight=133
     export function tcs34725Detect(dtype: TCS34725DetectType): number {
         // ★ 아두이노 Color_sensor 에는 읽기 경로가 triggerColorSensor() 하나뿐이라
@@ -57,7 +57,7 @@ namespace AdvSensors {
     }
 
     //% block="Color sensor %channel (0~255)"
-    //% channel.defl=TCS34725Channel.Red
+    //% channel.defl=AdvSensors.TCS34725Channel.Red
     //% group="색상감지(TCS34725)" weight=132
     export function tcs34725GetChannel(channel: TCS34725Channel): number {
         if (channel == TCS34725Channel.Red) return _tcs34725R8
@@ -71,7 +71,7 @@ namespace AdvSensors {
     }
 
     //% block="Color sensor is %color ?"
-    //% color.defl=TCS34725Color.Red
+    //% color.defl=AdvSensors.TCS34725Color.Red
     //% group="색상감지(TCS34725)" weight=131
     export function tcs34725IsColor(color: TCS34725Color): boolean {
         return _tcs34725DetectedColor == color
@@ -246,8 +246,8 @@ namespace AdvSensors {
      * @param unit Temperature unit
      */
     //% block="$source Temperature Read as $unit"
-    //% source.defl=MLX90614Source.Object
-    //% unit.defl=MLX90614TempUnit.Celsius
+    //% source.defl=AdvSensors.MLX90614Source.Object
+    //% unit.defl=AdvSensors.MLX90614TempUnit.Celsius
     //% group="비접촉온도(MLX90614)" weight=139
     //% inlineInputMode=inline
     export function mlx90614ReadTemp(source: MLX90614Source, unit: MLX90614TempUnit): number {
@@ -492,9 +492,9 @@ namespace AdvSensors {
     }
 
     //% block="APDS9960 %sensor sensor %enable, interrupt %interrupt"
-    //% sensor.defl=APDS9960SensorType.Ambient
-    //% enable.defl=APDS9960Enable.Enable
-    //% interrupt.defl=APDS9960Interrupt.Disable
+    //% sensor.defl=AdvSensors.APDS9960SensorType.Ambient
+    //% enable.defl=AdvSensors.APDS9960Enable.Enable
+    //% interrupt.defl=AdvSensors.APDS9960Interrupt.Disable
     //% group="제스처(APDS9960)" weight=124
     //% inlineInputMode=inline
     export function apds9960EnableSensor(sensor: APDS9960SensorType, enable: APDS9960Enable, interrupt: APDS9960Interrupt): void {
@@ -570,7 +570,7 @@ namespace AdvSensors {
     }
 
     //% block="APDS9960 %atype light"
-    //% atype.defl=APDS9960AmbientType.Ambient
+    //% atype.defl=AdvSensors.APDS9960AmbientType.Ambient
     //% group="제스처(APDS9960)" weight=123
     export function apds9960ReadAmbient(atype: APDS9960AmbientType): number {
         // ★ STATUS(0x93) 의 AVALID(bit0) 로 적분 완료 확인 — 예전에는 확인 없이 읽었다.
@@ -635,34 +635,24 @@ namespace AdvSensors {
     }
 
     //% block="APDS9960 gesture read %gesture"
-    //% gesture.defl=APDS9960GestureKR.Left
+    //% gesture.defl=AdvSensors.APDS9960GestureKR.Left
     //% group="제스처(APDS9960)" weight=120
     export function apds9960GetGesture(gesture: APDS9960GestureKR): boolean {
-        // ★ 예전에는 FIFO 에서 데이터셋 1개만 꺼내 그 순간의 채널 차이를 방향이라 단정했다.
-        //   (손이 '어디 있는지'를 보는 것이라 '어느 쪽으로 움직였는지'가 아니다. 게다가 나머지
-        //    31개를 FIFO 에 남겨 다음 호출들이 지나간 손짓을 계속 되읽었다.)
-        //   아래 apds9960ReadGesture 의 궤적 판정에 위임한다(두 열거형의 값은 동일하다).
-        //   ★ 단, 궤적 판정은 FIFO 를 통째로 비우므로 이 블록을 방향별로 여러 개 늘어놓으면
-        //     첫 번째만 손짓을 보고 나머지는 전부 None 이 된다. 그래서 판정된 손짓을
-        //     400ms 동안 붙들어 같은 패스의 형제 블록들이 같은 값을 보게 한다.
+        // Both reporter styles share the same 400ms cache and expiry time.
         let g = apds9960ReadGesture()
-        if (g != APDS9960Gesture.None) {
-            if (g == APDS9960Gesture.Up) _apds9960Gesture = APDS9960GestureKR.Up
-            else if (g == APDS9960Gesture.Down) _apds9960Gesture = APDS9960GestureKR.Down
-            else if (g == APDS9960Gesture.Left) _apds9960Gesture = APDS9960GestureKR.Left
-            else _apds9960Gesture = APDS9960GestureKR.Right
-            _apds9960GestureLatchMs = control.millis()
-        } else if (control.millis() - _apds9960GestureLatchMs > 400) {
-            _apds9960Gesture = APDS9960GestureKR.None
-        }
-        _apds9960GestureDetected = _apds9960Gesture != APDS9960GestureKR.None
-
-        return _apds9960Gesture == gesture
+        let selected = APDS9960GestureKR.None
+        if (g == APDS9960Gesture.Up) selected = APDS9960GestureKR.Up
+        else if (g == APDS9960Gesture.Down) selected = APDS9960GestureKR.Down
+        else if (g == APDS9960Gesture.Left) selected = APDS9960GestureKR.Left
+        else if (g == APDS9960Gesture.Right) selected = APDS9960GestureKR.Right
+        return selected == gesture
     }
 
     //% block="APDS9960 init"
     //% group="제스처(APDS9960)" weight=119
     export function apds9960Init(): void {
+        gestureCachedAt = -1000
+        _apds9960GestureLatchMs = -1000
         // ENABLE(0x80) = PON|AEN|PEN|WEN|GEN (0x4F)
         // ★ 레지스터 주소와 데이터는 반드시 한 트랜잭션으로 보내야 한다.
         //   i2cWriteNumber 를 두 번 부르면 각각 START…STOP 으로 끝나서
@@ -683,6 +673,13 @@ namespace AdvSensors {
     //% block="APDS9960 gesture read"
     //% group="제스처(APDS9960)" weight=118
     export function apds9960ReadGesture(): APDS9960Gesture {
+        let value = apds9960ReadGestureRaw()
+        if (value != APDS9960Gesture.None) { gestureCached = value; gestureCachedAt = control.millis() }
+        return control.millis() - gestureCachedAt <= 400 ? gestureCached : APDS9960Gesture.None
+    }
+    let gestureCached = APDS9960Gesture.None
+    let gestureCachedAt = -1000
+    function apds9960ReadGestureRaw(): APDS9960Gesture {
         // GSTATUS(0xAF) 의 GVALID(bit0)
         pins.i2cWriteNumber(_apds9960Addr, 0xAF, NumberFormat.UInt8BE, true)
         let status = pins.i2cReadNumber(_apds9960Addr, NumberFormat.UInt8BE)
@@ -825,6 +822,12 @@ namespace AdvSensors {
     //% block="Heart rate sensor setup"
     //% group="심박(MAX30102)" weight=110
     export function heartRateSetup(): void {
+        _hrLastSampleMs = 0
+        _hrFingerDetected = false
+        _hrIRLED = 0
+        _hrRedLED = 0
+        _hrHeartRate = 0
+        _hrSpO2 = 0
         _hrAddr = 0x57
 
         // 소프트 리셋
@@ -878,10 +881,10 @@ namespace AdvSensors {
         //   그런데 FIFO 는 꺼내면 사라지는 공유 자원이라, 샘플러가 도는 동안 여기서
         //   또 꺼내면 박동 검출기가 받는 샘플이 절반으로 줄어든다.
         //   샘플러가 20ms 마다 _hrFingerDetected 를 갱신하므로 그 값을 읽기만 한다.
-        if (_hrSamplerOn) return _hrFingerDetected
+        if (_hrSamplerOn) return hrFresh() && _hrFingerDetected
         heartRateReadRaw()
         // IR 값이 일정 수준 이상이면 손가락 감지
-        _hrFingerDetected = _hrIRLED > 50000
+        _hrFingerDetected = hrFresh() && _hrIRLED > 50000
         return _hrFingerDetected
     }
 
@@ -976,7 +979,7 @@ namespace AdvSensors {
                 //   그러면 DC 창이 의도한 640ms 가 아니라 320ms 분량의 실신호만 덮고
                 //   AC 파형이 계단처럼 뭉개진다(BPM 안정성·SpO2 R 값이 함께 나빠진다).
                 let fresh = heartRateReadRaw()
-                _hrFingerDetected = _hrIRLED > 50000
+                _hrFingerDetected = hrFresh() && _hrIRLED > 50000
                 if (_hrFingerDetected) {
                     if (fresh) {
                         hrProcessSample(_hrIRLED, control.millis())
@@ -1004,7 +1007,7 @@ namespace AdvSensors {
     //% group="심박(MAX30102)" weight=108
     export function heartRateGetBPM(): number {
         hrEnsureSampler()
-        if (!_hrFingerDetected) return 0
+        if (!hrFresh() || !_hrFingerDetected) return 0
 
         if (_hrBeatTimes.length >= 3) {                    // 최소 3박 모여야 값을 낸다
             let sum = 0
@@ -1031,7 +1034,7 @@ namespace AdvSensors {
         //   (아두이노의 HEARTRATE/OXYGEN 프리셋은 둘 다 RED+IR 이라, 이제 전력 설정
         //    블록으로는 이 상태에 들어가지 않는다.)
         if (_hrMode != 3) return 0
-        if (!_hrFingerDetected) return 0
+        if (!hrFresh() || !_hrFingerDetected) return 0
 
         // ★ R = (AC_red / DC_red) / (AC_ir / DC_ir)
         //   예전에는 주석에 이 식을 써놓고 실제로는 원시 DC 카운트의 단순 비율을
@@ -1067,7 +1070,7 @@ namespace AdvSensors {
         //     forever 루프에서 한 박동당 12번쯤 true 가 되어 박동수를 세면 10배 넘게 셌다.
         //     샘플러가 걸어둔 래치를 읽는 순간 소비해 진짜 1회성 펄스로 만든다.
         hrEnsureSampler()
-        if (!_hrBeatPulse) return false
+        if (!hrFresh() || !_hrBeatPulse) return false
         _hrBeatPulse = false
         return true
     }

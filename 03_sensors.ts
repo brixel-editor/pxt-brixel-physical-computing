@@ -4,7 +4,7 @@
  */
 
 //% weight=1080 color=#FF6F00 icon="\uf0e7" block="03. Sensors"
-//% groups='["초음파(HC-SR04)","초음파(US-100)","온습도(DHT11/DHT22)","물온도(DS18B20)","고온센서(High Temp)","서미스터(NTC)","온도(LM35)","무게(HX711)","미세먼지(PMS)","미세먼지(GP2Y0A21YK)","CO2센서(MHZ19)","가스(MQ 계열)","가스(MQ-2)","가스(MQ-135)","전기전도도(TDS)","pH","탁도(Turbidity)","UV Sensor","전류 센서(ACS712)","전압센서(Voltage Sensor)","Rotary Encoder","Joystick","Keypad","지문센서"]'
+//% groups='["초음파(HC-SR04)","초음파(US-100)","온습도(DHT11/DHT22)","물온도(DS18B20)","고온센서(High Temp)","서미스터(NTC)","온도(LM35)","무게(HX711)","미세먼지(PMS)","거리센서(GP2Y0A21YK)","CO2센서(MHZ19)","가스(MQ 계열)","가스(MQ-2)","가스(MQ-135)","전기전도도(TDS)","pH","탁도(Turbidity)","UV Sensor","전류 센서(ACS712)","전압센서(Voltage Sensor)","Rotary Encoder","Joystick","Keypad","지문센서","아날로그 입력","디지털 입력","전류 센서(WCS2801)","미세먼지(GP2Y1014AU0F)"]'
 namespace Sensors03 {
 
 
@@ -22,11 +22,11 @@ namespace Sensors03 {
     // 주의: P3/P4/P6/P7/P9/P10은 micro:bit LED 매트릭스와 공유되는 핀이다.
     // 이 핀에 TRIG/ECHO를 연결하면 디스플레이 스캔이 트리거 펄스를 덮어써서 값이 튄다.
     // 빈 핀(P0/P1/P2/P8/P12~P16)으로 배선하거나, 직접 led.enable(false)를 호출해야 한다.
-    let _hcsr04Trig: DigitalPin = DigitalPin.P7
-    let _hcsr04Echo: DigitalPin = DigitalPin.P8
+    let _hcsr04Trig: DigitalPin = DigitalPin.P14
+    let _hcsr04Echo: DigitalPin = DigitalPin.P13
 
     //% block="HC-SR04 set trigger pin %trig echo pin %echo"
-    //% trig.defl=DigitalPin.P7 echo.defl=DigitalPin.P8
+    //% trig.defl=DigitalPin.P14 echo.defl=DigitalPin.P13
     //% group="초음파(HC-SR04)" weight=230
     export function hcsr04SetPins(trig: DigitalPin, echo: DigitalPin): void {
         _hcsr04Trig = trig
@@ -42,6 +42,7 @@ namespace Sensors03 {
         control.waitMicros(10)
         pins.digitalWritePin(_hcsr04Trig, 0)
         let d = pins.pulseIn(_hcsr04Echo, PulseValue.High, 30000)
+        if (d <= 0) return -1 // no echo is not a distance of zero
         // 아두이노판 ultrasonic_distance 는 duration_us * (0.0343/2) 을 실수로 돌려준다
         // (= duration/58.31, 20°C 음속 343m/s). 기존 코드는 (1) 58 로 나눠 0.5% 크게 나왔고
         // (2) cm 를 정수로 자른 뒤 다시 2.54 로 나눠 inch 를 또 잘라서
@@ -587,7 +588,7 @@ namespace Sensors03 {
     //% block="Weight sensor(HX711): DOUT %dout, CLK %clk, gain %gain setup"
     //% dout.defl=DigitalPin.P0
     //% clk.defl=DigitalPin.P1
-    //% gain.defl=HX711Gain.Gain128
+    //% gain.defl=Sensors03.HX711Gain.Gain128
     //% group="무게(HX711)" weight=205
     //% inlineInputMode=inline
     export function hx711Init(dout: DigitalPin, clk: DigitalPin, gain: HX711Gain): void {
@@ -664,7 +665,7 @@ namespace Sensors03 {
     }
 
     //% block="HX711 weight sensor read %dtype"
-    //% dtype.defl=HX711DataType.Weight
+    //% dtype.defl=Sensors03.HX711DataType.Weight
     //% group="무게(HX711)" weight=199
     export function hx711Read(dtype: HX711DataType): number {
         if (dtype == HX711DataType.Raw) {
@@ -801,7 +802,7 @@ namespace Sensors03 {
     }
 
     //% block="PMS PM sensor power %power"
-    //% power.defl=PMSPower.Wakeup
+    //% power.defl=Sensors03.PMSPower.Wakeup
     //% group="미세먼지(PMS)" weight=184
     export function pmsPower(power: PMSPower): void {
         USBSerial.uartClaim(USBSerial.UartOwner.PMS)
@@ -832,7 +833,7 @@ namespace Sensors03 {
     }
 
     //% block="PMS PM sensor mode %mode"
-    //% mode.defl=PMSMode.Active
+    //% mode.defl=Sensors03.PMSMode.Active
     //% group="미세먼지(PMS)" weight=183
     export function pmsSetMode(mode: PMSMode): void {
         USBSerial.uartClaim(USBSerial.UartOwner.PMS)
@@ -863,7 +864,7 @@ namespace Sensors03 {
     }
 
     //% block="PMS PM sensor read %dtype"
-    //% dtype.defl=PMSDataType.PM2_5_STD
+    //% dtype.defl=Sensors03.PMSDataType.PM2_5_STD
     //% group="미세먼지(PMS)" weight=182
     export function pmsRead(dtype: PMSDataType): number {
         // 아두이노 PMS::readUntil() 은 체크섬까지 맞는 완전한 프레임이 올 때까지 최대
@@ -1171,8 +1172,9 @@ namespace Sensors03 {
     // MHZ19 상태 변수
     let _mhz19Tx: SerialPin = SerialPin.P1
     let _mhz19Rx: SerialPin = SerialPin.P2
-    let _mhz19CO2: number = 0
-    let _mhz19Temp: number = 0
+    let _mhz19CO2: number = -1
+    let _mhz19InitAt: number = -1
+    let _mhz19Temp: number = -9999
     export let _mhz19Range: number = 2000
     export let _mhz19AutoCal: boolean = true
 
@@ -1187,21 +1189,20 @@ namespace Sensors03 {
         _mhz19Tx = tx
         // 즉시 전환하지 않고 중재자에 등록만 한다 (여러 UART 장치 공용)
         USBSerial.uartRegister(USBSerial.UartOwner.MHZ19, rx, tx, baud)
-        basic.pause(500)  // 센서 안정화 대기
-
-        // 아두이노 mhz19_setup 은 어느 분기에서든 setup() 에 mhz19.begin(...) 과
-        // mhz19.autoCalibration() 을 함께 넣는다(11_sensors_a.js:511-530). 즉 부팅할 때마다
-        // ABC(자동 영점보정)를 반드시 ON 으로 되돌린다. MakeCode 는 이 명령을 보내지 않으면서
-        // _mhz19AutoCal 만 true 로 두고 있어, 이전 프로그램에서 ABC 를 꺼 놨어도 상태 블록은
-        // ON 이라고 답했다. 여기서 실제 프레임(FF 01 79 A0 00 00 00 00 E6)을 보낸다.
-        mhz19SetAutoCal(MHZ19AutoCal.On)
+        _mhz19InitAt = control.millis()
+        _mhz19CO2 = -1
+        _mhz19Temp = -9999
+        // MH-Z19D needs 60 seconds of warm-up. Do not change the sensor's
+        // persistent automatic calibration setting merely by starting UART.
     }
 
     //% block="MHZ19 set range: %range ppm"
-    //% range.defl=MHZ19Range.Range2000
+    //% range.defl=Sensors03.MHZ19Range.Range2000
     //% group="CO2센서(MHZ19)" weight=174
     export function mhz19SetRange(range: MHZ19Range): void {
+        if (range != MHZ19Range.Range2000 && range != MHZ19Range.Range5000 && range != MHZ19Range.Range10000) return
         USBSerial.uartClaim(USBSerial.UartOwner.MHZ19)
+        if (!USBSerial.uartIsOwner(USBSerial.UartOwner.MHZ19)) return
         _mhz19Range = range
         // 범위 설정 명령: FF 01 99 00 00 00 [범위H] [범위L] [체크섬]
         let cmd = pins.createBuffer(9)
@@ -1220,9 +1221,13 @@ namespace Sensors03 {
 
 
     //% block="MHZ19 read: %dtype"
-    //% dtype.defl=MHZ19DataType.CO2
+    //% dtype.defl=Sensors03.MHZ19DataType.CO2
     //% group="CO2센서(MHZ19)" weight=172
     export function mhz19Read(dtype: MHZ19DataType): number {
+        // Invalidate previous results before each request (Science Lab failure policy).
+        _mhz19CO2 = -1
+        _mhz19Temp = -9999
+        if (_mhz19InitAt < 0 || control.millis() - _mhz19InitAt < 60000) return dtype == MHZ19DataType.CO2 ? -1 : -9999
         USBSerial.uartClaim(USBSerial.UartOwner.MHZ19)
 
         // 명령 전에 수신 버퍼를 비운다 (앞선 설정 명령의 응답이 남아 있으면 프레임이 어긋난다)
@@ -1278,7 +1283,7 @@ namespace Sensors03 {
             let checksum = (0xFF - (sum & 0xFF) + 1) & 0xFF
             if (checksum == resp[8]) {
                 _mhz19CO2 = (resp[2] << 8) | resp[3]
-                _mhz19Temp = resp[4] - 40  // 온도는 40을 빼야 함
+                _mhz19Temp = resp[4] - 40 // Legacy family diagnostic only; not a documented MH-Z19D air-temperature measurement.
             }
         }
 
@@ -1294,11 +1299,12 @@ namespace Sensors03 {
     // 아두이노 생성기의 기본값도 24h(=0xA0)라 여기서 0xA0/0x00 을 고정으로 쓰는 것은
     // 기본 사용에서 바이트 단위로 동일하다. (주기를 고르는 인자는 블록 목록을 바꾸지 않기 위해 두지 않는다)
     //% block="MHZ19 auto calibration %autoCal"
-    //% autoCal.defl=MHZ19AutoCal.On
+    //% autoCal.defl=Sensors03.MHZ19AutoCal.On
     //% group="CO2센서(MHZ19)" weight=171
     //% inlineInputMode=inline
     export function mhz19SetAutoCal(autoCal: MHZ19AutoCal): void {
         USBSerial.uartClaim(USBSerial.UartOwner.MHZ19)
+        if (!USBSerial.uartIsOwner(USBSerial.UartOwner.MHZ19)) return
         _mhz19AutoCal = (autoCal == MHZ19AutoCal.On)
         // 자동 보정 ON: FF 01 79 A0 00 00 00 00 E6
         // 자동 보정 OFF: FF 01 79 00 00 00 00 00 86

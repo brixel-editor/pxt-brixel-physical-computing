@@ -2,7 +2,7 @@
 namespace Sensors03 {
 
     //% block="MHZ19 status read: %status"
-    //% status.defl=MHZ19Status.Range
+    //% status.defl=Sensors03.MHZ19Status.Range
     //% group="CO2센서(MHZ19)" weight=170
     export function mhz19GetStatus(status: MHZ19Status): number {
         // 아두이노 getRange()/getABC() 는 매번 센서에 직접 물어본다:
@@ -12,19 +12,22 @@ namespace Sensors03 {
         // 센서를 뽑아 놔도 항상 2000ppm / 자동보정 ON 이라고 답했다.
         if (status == MHZ19Status.Range) {
             let r = mhz19Query(0x9B)
+            if (r.length < 9) return -1
             if (r.length >= 9) _mhz19Range = (r[4] << 8) | r[5]
             return _mhz19Range
         }
         let a = mhz19Query(0x7D)
+        if (a.length < 9) return -1
         if (a.length >= 9) _mhz19AutoCal = a[7] != 0
         return _mhz19AutoCal ? 1 : 0
     }
 
     // MH-Z19 질의 프레임 하나를 보내고 검증된 9바이트 응답을 받아온다 (내부 함수).
     // mhz19Read 와 같은 논블로킹 + 마감시각 방식이라 센서가 없어도 fiber 가 멈추지 않는다.
-    // 실패하면 빈 배열을 돌려준다(호출부는 직전 값을 유지한다).
+    // 실패하면 빈 배열을 돌려준다(상태 블록은 -1을 반환한다).
     function mhz19Query(cmdByte: number): number[] {
         USBSerial.uartClaim(USBSerial.UartOwner.MHZ19)
+        if (!USBSerial.uartIsOwner(USBSerial.UartOwner.MHZ19)) return []
         serial.readBuffer(0)   // 앞선 명령의 잔여 응답 버리기
 
         let cmd = pins.createBuffer(9)
@@ -171,7 +174,7 @@ namespace Sensors03 {
     }
 
     //% block="TDS sensor read: %dtype"
-    //% dtype.defl=TDSDataType.TDS
+    //% dtype.defl=Sensors03.TDSDataType.TDS
     //% group="전기전도도(TDS)" weight=162
     export function tdsRead(dtype: TDSDataType): number {
         if (dtype == TDSDataType.TDS) {
@@ -183,7 +186,7 @@ namespace Sensors03 {
     }
 
     //% block="TDS sensor advanced %setting value: %value"
-    //% setting.defl=TDSAdvanced.RefVoltage
+    //% setting.defl=Sensors03.TDSAdvanced.RefVoltage
     //% value.defl=3.3
     //% group="전기전도도(TDS)" weight=161
     //% inlineInputMode=inline
@@ -305,7 +308,7 @@ namespace Sensors03 {
     }
 
     //% block="pH calibration %cmd"
-    //% cmd.defl=PHCalibration.EnterCal
+    //% cmd.defl=Sensors03.PHCalibration.EnterCal
     //% group="pH" weight=152
     export function phCalibrate(cmd: PHCalibration): void {
         let currentVoltage = phReadVoltage()
@@ -453,7 +456,7 @@ namespace Sensors03 {
      * @returns 성공 여부
      */
     //% block="Fingerprint enroll $step, ID: $id"
-    //% step.defl=FingerprintEnrollStep.GetImage
+    //% step.defl=Sensors03.FingerprintEnrollStep.GetImage
     //% id.min=1 id.max=127 id.defl=1
     //% group="지문센서" weight=184
     export function fingerprintEnroll(step: FingerprintEnrollStep, id: number): boolean {
@@ -488,7 +491,7 @@ namespace Sensors03 {
      * @returns 성공 여부
      */
     //% block="Fingerprint search mode: $mode"
-    //% mode.defl=FingerprintSearchMode.Fast
+    //% mode.defl=Sensors03.FingerprintSearchMode.Fast
     //% group="지문센서" weight=183
     export function fingerprintSearch(mode: FingerprintSearchMode): boolean {
         // 1. 이미지 가져오기
@@ -537,7 +540,7 @@ namespace Sensors03 {
      * @returns 결과 값
      */
     //% block="Fingerprint result: $resultType"
-    //% resultType.defl=FingerprintResult.FingerID
+    //% resultType.defl=Sensors03.FingerprintResult.FingerID
     //% group="지문센서" weight=182
     export function fingerprintGetResult(resultType: FingerprintResult): number {
         switch (resultType) {
@@ -559,7 +562,7 @@ namespace Sensors03 {
      * @returns 결과 값
      */
     //% block="Fingerprint database $action, ID: $id"
-    //% action.defl=FingerprintDBAction.Delete
+    //% action.defl=Sensors03.FingerprintDBAction.Delete
     //% id.min=1 id.max=127 id.defl=1
     //% group="지문센서" weight=181
     export function fingerprintDatabase(action: FingerprintDBAction, id: number): number {
@@ -595,7 +598,7 @@ namespace Sensors03 {
      * @param state LED 상태
      */
     //% block="Fingerprint Sensor LED $state"
-    //% state.defl=FingerprintLED.On
+    //% state.defl=Sensors03.FingerprintLED.On
     //% group="지문센서" weight=180
     export function fingerprintLED(state: FingerprintLED): void {
         // ★ 아두이노 fingerprint_led_control 의 ON/OFF 는 finger.LEDcontrol(true/false) 이고,
@@ -744,7 +747,7 @@ namespace Sensors03 {
      * @returns 온도 값
      */
     //% block="Thermistor read temperature ($unit)"
-    //% unit.defl=TempUnit.Celsius
+    //% unit.defl=AdvSensors.TempUnit.Celsius
     //% group="서미스터(NTC)" weight=188
     export function thermistorReadTemp(unit: TempUnit): number {
         // 아두이노 THERMISTOR::read() 는 10ms 간격으로 5회(NUMSAMPLES) 샘플링해 평균한 뒤 변환한다
@@ -815,11 +818,11 @@ namespace Sensors03 {
     /********** 탁도 센서 (Turbidity Sensor) **********/
 
     // 탁도 센서는 물의 혼탁도를 측정합니다.
-    // 단위: NTU (Nephelometric Turbidity Units)
+    // 상대 탁도 0~3000. 표준 NTU로 보정한 값이 아니다.
 
     // 탁도 데이터 타입
     export enum TurbidityDataType {
-        //% block="turbidity(NTU)"
+        //% block="relative turbidity (0~3000)"
         NTU = 0,
         //% block="voltage(V)"
         Voltage = 1
@@ -884,7 +887,7 @@ namespace Sensors03 {
 
 
     //% block="Turbidity sensor read: %dtype"
-    //% dtype.defl=TurbidityDataType.NTU
+    //% dtype.defl=Sensors03.TurbidityDataType.NTU
     //% group="탁도(Turbidity)" weight=142
     export function turbidityRead(dtype: TurbidityDataType): number {
         // 아날로그 값 읽기 (여러 번 읽어서 절사평균 — turbidityTrimmedMean 주석 참조)
@@ -902,7 +905,7 @@ namespace Sensors03 {
             return Math.round(voltage * 1000) / 1000
         }
 
-        // NTU 계산 — 전압이 낮을수록 탁도가 높다.
+        // 상대 탁도 계산 — 전압이 낮을수록 탁도가 높다.
         // ※ 아두이노판 getTurbidityNTU 의 절대 곡선(800 - 1900*(V-2.5), 맑은 물 4.15V)은
         //   5V 전압 영역에 묶여 있어 3.3V 기준 마이크로비트 ADC 로는 그대로 옮길 수 없다.
         //   그래서 여기서는 보정한 맑은 물 전압에 대한 상대 램프를 쓴다.
@@ -912,10 +915,10 @@ namespace Sensors03 {
 
         // 보정 전에는 기준 전압이 없어 상대값조차 계산할 수 없다 (0 으로 나눔 방지).
         // 데드밴드(0.5V)보다 기준 전압이 낮으면 애초에 의미 있는 측정이 아니다.
-        if (_turbidityClearVoltage <= 0.5) return 0
+        if (_turbidityClearVoltage <= 0.5 || analogValue >= 1023) return -1
 
         // 아두이노의 0.5V 데드밴드(11_sensors_a.js:917): 맑은 물 기준에서 0.5V 넘게 떨어지기
-        // 전까지는 0 NTU 다. 기준점 근처의 ADC 잡음이 수십 NTU 로 보이는 것을 막는 장치다.
+        // 전까지는 상대값 0이다. 기준점 근처 ADC 잡음을 줄이는 장치다.
         // ★ 아두이노 곡선은 데드밴드 경계에서 이미 음수라 클램프되어 값이 연속이다.
         //   그래서 여기서도 램프의 시작점을 '기준전압 - 0.5V' 로 옮겨 연속으로 만든다.
         //   예전 코드는 0.5V 미만을 통째로 3000 으로 치환해서 그 경계에서 값이 뚝 튀었다
@@ -957,114 +960,51 @@ namespace Sensors03 {
         Outdoor = 1
     }
 
-    // UV 센서 상태 변수
     let _uvPin: AnalogPin = AnalogPin.P0
-    let _uvRefVoltage: number = 3300  // mV
-    let _uvOffsetVoltage: number = 990  // 실내 기준 전압 (mV)
-    // 1 단위(mW/cm² ≒ UV 지수 1)당 전압(mV).
-    // 아두이노판과 같은 기준: (2800 - 990) / 15 = 120.667 mV
-    let _uvSpanMvPerUnit: number = 120.667
-
-    //% block="UV sensor setup: analog pin %pin"
-    //% pin.defl=AnalogPin.P0
-    //% group="UV Sensor" weight=135
+    let _uvZero = -1
+    let _uvIndexPerMv = 0
+    let _uvIntensityPerMv = 0
+    /** GUVA-S12SD module: voltage can be read immediately; physical units require measured references. */
+    //% block="UV sensor setup: analog pin %pin" pin.defl=AnalogPin.P0 group="UV Sensor" weight=135
     export function uvInit(pin: AnalogPin): void {
-        _uvPin = pin
-        _uvRefVoltage = 3300
-        _uvOffsetVoltage = 990
-        // 셋업을 다시 하면 감도 보정도 기본값으로 되돌린다.
-        // ★ 선언부의 초기값과 반드시 같은 수여야 한다 — 예전에는 여기만 120 이라
-        //   'UV sensor setup' 을 한 번 부르는 것만으로 감도가 0.55% 달라졌고,
-        //   uvRead 주석이 말하는 (2800-990)/15 = 120.667 기준과도 어긋났다.
-        _uvSpanMvPerUnit = 120.667
+        _uvPin = pin; _uvZero = -1; _uvIndexPerMv = 0; _uvIntensityPerMv = 0
     }
-
-    // ★ 기본값을 990 에서 0 으로 바꿨다. 아두이노 uv_sensor_calibrate 의 INDOOR/OUTDOOR 는
-    //   '항상 측정' 하는 항목이고, 숫자를 직접 넣는 것은 별도의 CUSTOM 항목이다
-    //   (11_sensors_a.js:955-980). MakeCode 는 드롭다운 항목을 늘릴 수 없어 두 경우를 한 인자로
-    //   합쳐 뒀는데, 기본값이 990 이라 팔레트에서 그냥 끌어다 놓으면 uvInit 이 이미 넣어 둔
-    //   990 을 다시 990 으로 대입할 뿐 아무 측정도 하지 않는 무동작 블록이었다.
-    //   0 = 자동 측정(아두이노 INDOOR/OUTDOOR), 0 보다 큰 값 = 그 값을 그대로 사용(CUSTOM).
+    /** Legacy calibration API. Indoor captures a shielded zero. Outdoor voltage alone cannot establish UV index or intensity; use uvSetReference after zeroing. */
     //% block="UV sensor calibrate %calType, ref voltage: %voltage mV"
-    //% calType.defl=UVCalibration.Indoor
-    //% voltage.defl=0 voltage.min=0 voltage.max=3300
+    //% calType.defl=Sensors03.UVCalibration.Indoor voltage.defl=0 voltage.min=0 voltage.max=3300
     //% group="UV Sensor" weight=134
-    //% inlineInputMode=inline
     export function uvCalibrate(calType: UVCalibration, voltage: number): void {
-        if (calType == UVCalibration.Indoor) {
-            // 실내에서 현재 전압을 영점으로 설정
-            if (voltage > 0) {
-                _uvOffsetVoltage = voltage
-            } else {
-                // 자동 측정
-                let analogSum = 0
-                for (let i = 0; i < 10; i++) {
-                    analogSum += pins.analogReadPin(_uvPin)
-                    basic.pause(10)
-                }
-                _uvOffsetVoltage = (analogSum / 10) * _uvRefVoltage / 1023
-            }
-        } else {
-            // 실외(햇빛) 보정 — 예전에는 이 분기 자체가 없어서 드롭다운의 절반이 무동작이었다.
-            // 햇빛에서 측정한 전압을 전체 스케일(15 mW/cm²)로 보고 감도(span)를 잡는다.
-            let v = voltage
-            if (v <= 0) {
-                // 자동 측정
-                let analogSum = 0
-                for (let i = 0; i < 10; i++) {
-                    analogSum += pins.analogReadPin(_uvPin)
-                    basic.pause(10)
-                }
-                v = (analogSum / 10) * _uvRefVoltage / 1023
-            }
-            // 영점보다 높을 때만 반영 (0 이나 음수 감도가 되는 것을 막는다)
-            if (v > _uvOffsetVoltage) {
-                _uvSpanMvPerUnit = (v - _uvOffsetVoltage) / 15
-            }
-        }
+        _uvIndexPerMv = 0; _uvIntensityPerMv = 0
+        if (calType != UVCalibration.Indoor) return
+        _uvZero = -1
+        if (!BrixelInternal.finite(voltage) || voltage < 0 || voltage >= 3300) return
+        let raw = voltage > 0 ? voltage * 1023 / 3300 : BrixelInternal.calibrationAnalog(_uvPin)
+        if (raw >= 0 && raw < 1023) _uvZero = raw * 3300 / 1023
     }
-
-    //% block="UV sensor read: %dtype"
-    //% dtype.defl=UVDataType.UVIndex
-    //% group="UV Sensor" weight=133
+    /** Use a reference UV meter with the selected unit and matching spectral response. Index and mW/cm2 have independent calibration. Recalibration resets that unit on failure. */
+    //% block="UV sensor calibrate $dtype reference $reference"
+    //% group="UV Sensor" dtype.defl=Sensors03.UVDataType.UVIndex reference.defl=3
+    export function uvSetReference(dtype: UVDataType, reference: number): void {
+        if (dtype == UVDataType.UVIndex) _uvIndexPerMv = 0
+        else if (dtype == UVDataType.Intensity) _uvIntensityPerMv = 0
+        else return
+        if (_uvZero < 0 || !BrixelInternal.finite(reference) || reference <= 0) return
+        let raw = BrixelInternal.calibrationAnalog(_uvPin)
+        let delta = raw * 3300 / 1023 - _uvZero
+        if (raw < 0 || raw >= 1023 || delta < 5) return
+        if (dtype == UVDataType.UVIndex) _uvIndexPerMv = reference / delta
+        else _uvIntensityPerMv = reference / delta
+    }
+    /** Failure/un-calibrated physical unit=-1. Voltage is ADC input mV, not an absolute UV quantity. */
+    //% block="UV sensor read: %dtype" dtype.defl=Sensors03.UVDataType.Voltage group="UV Sensor" weight=133
     export function uvRead(dtype: UVDataType): number {
-        // 아날로그 값 읽기 (여러 번 읽어서 평균)
-        let analogSum = 0
-        for (let i = 0; i < 10; i++) {
-            analogSum += pins.analogReadPin(_uvPin)
-            basic.pause(10)
-        }
-        let analogValue = analogSum / 10
-
-        // 전압 계산 (mV)
-        let voltage = analogValue * _uvRefVoltage / 1023
-
-        if (dtype == UVDataType.Voltage) {
-            return Math.round(voltage)
-        }
-
-        // UV 강도 계산 (mW/cm²)
-        // ML8511 기준: 출력 전압 1V = 0 mW/cm², 2.8V = 15 mW/cm² (기본 120mV per mW/cm²)
-        // 실외 보정을 하면 _uvSpanMvPerUnit 이 그 감도로 대체된다.
-        let intensity = (voltage - _uvOffsetVoltage) / _uvSpanMvPerUnit
-        if (intensity < 0) intensity = 0
-
-        if (dtype == UVDataType.Intensity) {
-            return Math.round(intensity * 100) / 100
-        }
-
-        // UV 지수 계산 (0~15)
-        // 예전 식은 intensity/0.25 (4배 증폭) 후 15 로 잘라서, 강도 3.75 이상이면
-        // 즉 모든 실외 측정값이 항상 15 로 붙박이가 됐다.
-        // ★ 아두이노판 getUVIndex 와 같은 스케일을 쓴다: 990mV~2800mV 를 0~15 로 선형 대응.
-        //   여기서 intensity 는 (voltage-990)/120.667 이라 그 값 자체가 곧 UV 지수다.
-        //   (11 로 다시 줄이면 아두이노판보다 26% 낮게 나온다 — 상한도 15 이지 11 이 아니다)
-        // 주의: ML8511 은 280~390nm 광대역 포토다이오드라 정식 UV Index 계측기가 아니다(교육용 근사값).
-        let uvIndex = intensity
-        if (uvIndex < 0) uvIndex = 0
-        if (uvIndex > 15) uvIndex = 15
-
-        return Math.round(uvIndex * 10) / 10
+        let raw = BrixelInternal.analog(_uvPin)
+        if (raw < 0 || raw >= 1023) return -1
+        let voltage = raw * 3300 / 1023
+        if (dtype == UVDataType.Voltage) return Math.round(voltage)
+        let gain = dtype == UVDataType.UVIndex ? _uvIndexPerMv : _uvIntensityPerMv
+        if (_uvZero < 0 || gain <= 0) return -1
+        return Math.round(Math.max(0, voltage - _uvZero) * gain * 100) / 100
     }
 
 
@@ -1089,7 +1029,7 @@ namespace Sensors03 {
     /********** GP2Y0A21YK 적외선 거리 센서 **********/
 
     //% block="GP2Y0A21YK read distance pin %pin unit %unit"
-    //% group="미세먼지(GP2Y0A21YK)" weight=120
+    //% group="거리센서(GP2Y0A21YK)" weight=120
     export function gp2y0a21ykRead(pin: AnalogPin, unit: DistanceUnit): number {
         // 예전 식 12343.85/(v-0.42) 은 5V/10bit 용 상수 12343.85 를 지수 -1.15 의 멱함수가 아니라
         // 단순 역수에 쓴 것이라 거리가 1.7~3배 크게 나왔고, 센서 전원이 없으면 v=0 → -29390cm 가 나왔다.
@@ -1134,6 +1074,7 @@ namespace Sensors03 {
         control.waitMicros(10)
         pins.digitalWritePin(_us100Trig, 0)
         let d = pins.pulseIn(_us100Echo, PulseValue.High, 30000)
+        if (d <= 0) return -1
         // HC-SR04 와 같은 이유로 58.31 (= 2 / 0.0343) 을 쓰고 절삭하지 않는다.
         let cm = d / 58.31
 
@@ -1234,7 +1175,7 @@ namespace Sensors03 {
     }
 
     //% block="High temp read temperature (%unit)"
-    //% unit.defl=TempUnit.Celsius
+    //% unit.defl=AdvSensors.TempUnit.Celsius
     //% group="고온센서(High Temp)" weight=194
     export function hiTempRead(unit: TempUnit): number {
         let adc = pins.analogReadPin(_hiTempPin)

@@ -16,7 +16,7 @@ namespace AdvSensors {
      * @param byteType 읽을 바이트 위치
      */
     //% block="I2C Weight Sensor read raw byte $byteType"
-    //% byteType.defl=I2CWeightByte.DataHigh
+    //% byteType.defl=AdvSensors.I2CWeightByte.DataHigh
     //% group="I2C 무게센서" weight=55
     export function i2cWeightReadByte(byteType: I2CWeightByte): number {
         let b = pins.i2cReadBuffer(_i2cWeightAddr, 3)

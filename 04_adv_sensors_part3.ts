@@ -11,7 +11,7 @@ namespace AdvSensors {
         //   안 그러면 프로그램 시작 수십 ms 만에 '준비됨' 이 되어, DC 추정이 수렴하기 전의
         //   불안정한 BPM/SpO2 가 화면에 뜬다.
         if (control.millis() - _hrSetupMs < 5000) return false
-        return _hrReady && _hrFingerDetected
+        return _hrReady && hrFresh() && _hrFingerDetected
     }
 
     //% block="Sensor temperature (°C)"
@@ -38,8 +38,8 @@ namespace AdvSensors {
     }
 
     //% block="%stype sensor power setting %power"
-    //% stype.defl=HeartRateSensorType.HeartRate
-    //% power.defl=HeartRatePower.Medium
+    //% stype.defl=AdvSensors.HeartRateSensorType.HeartRate
+    //% power.defl=AdvSensors.HeartRatePower.Medium
     //% group="심박(MAX30102)" weight=103
     //% inlineInputMode=inline
     export function heartRateSetPower(stype: HeartRateSensorType, power: HeartRatePower): void {
@@ -114,6 +114,10 @@ namespace AdvSensors {
     //   예전 micro:bit 코드는 새 샘플이 없으면 직전 값을 그대로 둔 채 반환했는데,
     //   호출부는 그 사실을 모르고 무조건 hrProcessSample()/hrTrackAcDc() 를 불러
     //   이동평균과 AC min/max 에 같은 값을 반복해서 밀어 넣었다.
+    export function hrFresh(): boolean {
+        return _hrLastSampleMs > 0 && control.millis() - _hrLastSampleMs < 250
+    }
+
     export function heartRateReadRaw(): boolean {
         // ★ FIFO_WR_PTR(0x04) 와 FIFO_RD_PTR(0x06) 을 비교해 새 샘플이 있을 때만 읽는다.
         //   예전에는 무조건 읽어서 같은 샘플을 반복 처리하거나 빈 FIFO 를 읽었다.
@@ -208,7 +212,7 @@ namespace AdvSensors {
      * @param valueType Value type to read
      */
     //% block="Si7021 Read Value: $valueType"
-    //% valueType.defl=Si7021Value.TempC
+    //% valueType.defl=AdvSensors.Si7021Value.TempC
     //% group="온습도(Si7021)" weight=140
     export function si7021Read(valueType: Si7021Value): number {
         if (valueType == Si7021Value.Humidity) {
@@ -256,7 +260,7 @@ namespace AdvSensors {
      * @param serialType Serial type (A or B)
      */
     //% block="Si7021 Read Serial: Serial $serialType"
-    //% serialType.defl=Si7021Serial.A
+    //% serialType.defl=AdvSensors.Si7021Serial.A
     //% group="온습도(Si7021)" weight=138
     export function si7021ReadSerial(serialType: Si7021Serial): number {
         if (serialType == Si7021Serial.A) {
@@ -704,7 +708,7 @@ namespace AdvSensors {
     }
 
     //% block="Fingerprint enroll %step, ID: %id"
-    //% step.defl=FPEnroll.GetImage
+    //% step.defl=AdvSensors.FPEnroll.GetImage
     //% id.defl=1 id.min=1 id.max=162
     //% group="Fingerprint" weight=74
     //% inlineInputMode=inline
@@ -766,7 +770,7 @@ namespace AdvSensors {
     }
 
     //% block="Fingerprint search mode: %mode"
-    //% mode.defl=FPSearchMode.Fast
+    //% mode.defl=AdvSensors.FPSearchMode.Fast
     //% group="Fingerprint" weight=73
     export function fpSearch(mode: FPSearchMode): number {
         USBSerial.uartClaim(USBSerial.UartOwner.Fingerprint)
@@ -841,7 +845,7 @@ namespace AdvSensors {
     }
 
     //% block="Fingerprint result: %result"
-    //% result.defl=FPResult.FingerID
+    //% result.defl=AdvSensors.FPResult.FingerID
     //% group="Fingerprint" weight=72
     export function fpGetResult(result: FPResult): number {
         if (result == FPResult.FingerID) {
@@ -853,7 +857,7 @@ namespace AdvSensors {
     }
 
     //% block="Fingerprint database %cmd, ID: %id"
-    //% cmd.defl=FPDatabase.DeleteID
+    //% cmd.defl=AdvSensors.FPDatabase.DeleteID
     //% id.defl=1 id.min=1 id.max=162
     //% group="Fingerprint" weight=71
     //% inlineInputMode=inline
@@ -915,7 +919,7 @@ namespace AdvSensors {
     }
 
     //% block="Fingerprint LED control %state"
-    //% state.defl=FPLED.On
+    //% state.defl=AdvSensors.FPLED.On
     //% group="Fingerprint" weight=70
     export function fpLED(state: FPLED): void {
         USBSerial.uartClaim(USBSerial.UartOwner.Fingerprint)
@@ -1068,13 +1072,15 @@ namespace AdvSensors {
 
     // CCS811 데이터 저장 변수
     let _ccs811Addr: number = 0x5A
-    let _ccs811CO2: number = 0
-    let _ccs811TVOC: number = 0
+    let _ccs811CO2: number = -1
+    let _ccs811ValidAt: number = -10000
+    let _ccs811TVOC: number = -1
     let _ccs811Error: number = 0     // 마지막 ERROR_ID(0xE0) 값
 
     //% block="CCS811 init"
     //% group="CO2센서(CCS811)" weight=88
     export function ccs811Init(): void {
+        _ccs811CO2 = -1; _ccs811TVOC = -1; _ccs811ValidAt = -10000; _ccs811Error = 0
         // 앱 시작 명령
         pins.i2cWriteNumber(_ccs811Addr, 0xF4, NumberFormat.UInt8BE)
         basic.pause(100)
@@ -1086,34 +1092,30 @@ namespace AdvSensors {
     //% block="CCS811 read %ctype"
     //% group="CO2센서(CCS811)" weight=87
     export function ccs811Read(ctype: CCS811Type): number {
-        // ★ STATUS(0x00) 의 DATA_READY(bit3) 확인 — 예전에는 무조건 읽어서
-        //   아직 갱신되지 않은 이전 측정값이나 초기값을 새 값처럼 반환했다.
-        //   ERROR(bit0) 도 함께 확인한다.
         pins.i2cWriteNumber(_ccs811Addr, 0x00, NumberFormat.UInt8BE, true)
         let status = pins.i2cReadNumber(_ccs811Addr, NumberFormat.UInt8BE)
-        if ((status & 0x01) != 0) {            // ERROR
-            // ★ CCS811 의 ERROR 플래그는 ERROR_ID(0xE0)를 읽어야만 지워진다.
-            //   예전에는 이 레지스터를 한 번도 읽지 않아, 순간적인 오류 한 번에
-            //   이후 모든 읽기가 캐시값만 돌려주는 상태로 굳었다(전원 재투입 전까지 복구 불가).
-            pins.i2cWriteNumber(_ccs811Addr, 0xE0, NumberFormat.UInt8BE, true)
-            _ccs811Error = pins.i2cReadNumber(_ccs811Addr, NumberFormat.UInt8BE)
-            return ctype == CCS811Type.CO2 ? _ccs811CO2 : _ccs811TVOC
+        if ((status & 1) != 0 || (status & 0x80) == 0) {
+            if ((status & 1) != 0) {
+                pins.i2cWriteNumber(_ccs811Addr, 0xE0, NumberFormat.UInt8BE, true)
+                _ccs811Error = pins.i2cReadNumber(_ccs811Addr, NumberFormat.UInt8BE)
+            }
+            _ccs811CO2 = -1; _ccs811TVOC = -1; _ccs811ValidAt = -10000
+            return -1
         }
-        if ((status & 0x08) == 0) {            // DATA_READY 아님 → 직전 값 유지
-            return ctype == CCS811Type.CO2 ? _ccs811CO2 : _ccs811TVOC
+        if ((status & 8) != 0) {
+            pins.i2cWriteNumber(_ccs811Addr, 0x02, NumberFormat.UInt8BE, true)
+            let buf = pins.i2cReadBuffer(_ccs811Addr, 8)
+            let co2 = (buf[0] << 8) | buf[1]
+            if ((buf[4] & 1) != 0 || buf[5] != 0 || co2 < 400) {
+                _ccs811CO2 = -1; _ccs811TVOC = -1; _ccs811ValidAt = -10000
+                return -1
+            }
+            _ccs811CO2 = co2
+            _ccs811TVOC = (buf[2] << 8) | buf[3]
+            _ccs811ValidAt = control.millis()
         }
-
-        // 결과 레지스터 읽기
-        pins.i2cWriteNumber(_ccs811Addr, 0x02, NumberFormat.UInt8BE, true)
-        let buf = pins.i2cReadBuffer(_ccs811Addr, 4)
-
-        _ccs811CO2 = (buf[0] << 8) | buf[1]
-        _ccs811TVOC = (buf[2] << 8) | buf[3]
-
-        if (ctype == CCS811Type.CO2) {
-            return _ccs811CO2
-        }
-        return _ccs811TVOC
+        if (control.millis() - _ccs811ValidAt > 2500) return -1
+        return ctype == CCS811Type.CO2 ? _ccs811CO2 : _ccs811TVOC
     }
 
 

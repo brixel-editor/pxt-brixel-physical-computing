@@ -251,7 +251,7 @@ namespace Sensors03 {
     }
 
     //% block="joystick direction %dir ?"
-    //% dir.defl=JoystickDir.Up
+    //% dir.defl=Sensors03.JoystickDir.Up
     //% group="Joystick" weight=81
     export function joystickIs(dir: JoystickDir): boolean {
         return joystickDirection() == dir
@@ -306,7 +306,7 @@ namespace Sensors03 {
     }
 
     //% block="keypad set type %kpType|row pin %r1 %r2 %r3 %r4|column pin %c1 %c2 %c3 %c4"
-    //% kpType.defl=KeypadType.Keypad4x4
+    //% kpType.defl=Sensors03.KeypadType.Keypad4x4
     //% r1.defl=DigitalPin.P0 r2.defl=DigitalPin.P1 r3.defl=DigitalPin.P2 r4.defl=DigitalPin.P8
     //% c1.defl=DigitalPin.P12 c2.defl=DigitalPin.P13 c3.defl=DigitalPin.P14 c4.defl=DigitalPin.P15
     //% group="Keypad" weight=75
@@ -448,7 +448,7 @@ namespace Sensors03 {
 
     //% block="ACS712 current (A)|pin %pin|type %sensorType"
     //% pin.defl=AnalogPin.P0
-    //% sensorType.defl=ACS712Type.ACS712_20A
+    //% sensorType.defl=Sensors03.ACS712Type.ACS712_20A
     //% group="전류 센서(ACS712)" weight=58
     export function acs712Current(pin: AnalogPin, sensorType: ACS712Type): number {
         let raw = pins.analogReadPin(pin)

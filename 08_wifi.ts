@@ -56,7 +56,7 @@ namespace WiFi08 {
     function _spill(s: string): void {
         if (!_wsPollStarted) return        // 폴러가 없으면 모아둘 이유가 없다
         _wsSpill += s
-        if (_wsSpill.length > 1024) _wsSpill = _wsSpill.substr(_wsSpill.length - 512)
+        if (_wsSpill.length > 4096) _wsConfigure()
     }
 
     // AT 응답 읽기.
@@ -72,7 +72,7 @@ namespace WiFi08 {
         // 앞 명령의 잔여 바이트를 걷어내 응답이 섞이지 않게 한다 (최대 8회로 제한).
         // 걷어낸 바이트도 버리지 않고 폴러에게 넘긴다.
         for (let d = 0; d < 8; d++) {
-            let stale = serial.readString()
+            let stale = _readBinary()
             if (stale.length === 0) break
             _spill(stale)
         }
@@ -82,10 +82,10 @@ namespace WiFi08 {
         while (waited < waitMs) {
             basic.pause(5)
             waited += 5
-            let chunk = serial.readString()
+            let chunk = _readBinary()
             if (chunk && chunk.length > 0) {
                 _spill(chunk)              // resp 는 512자에서 잘리므로 잘리기 전에 넘긴다
-                resp += chunk
+                resp += _lastAtText
                 if (resp.indexOf("OK\r\n") >= 0) break
                 if (resp.indexOf("ERROR\r\n") >= 0) break
                 // ★ AT+CWJAP 은 실패할 때 ERROR 가 아니라 FAIL 로 끝난다.
@@ -167,70 +167,114 @@ namespace WiFi08 {
         }
     }
 
+    let _netBuffer = ""
+    let _wsLastSendOK = false
+    let _atPending = ""
+    let _atPayloadLeft = 0
+    let _lastAtText = ""
+    // ESP-AT notifications can be interleaved with command replies. Never treat
+    // a '>' or 'SEND OK' inside length-delimited +IPD data as an AT reply.
+    function _readBinary(): string {
+        let raw = BrixelWebSocket.binary(serial.readBuffer(0))
+        _atPending += raw
+        _lastAtText = ""
+        while (_atPending.length > 0) {
+            if (_atPayloadLeft > 0) {
+                let count = Math.min(_atPayloadLeft, _atPending.length)
+                _atPending = _atPending.substr(count); _atPayloadLeft -= count
+                continue
+            }
+            if (_atPending.indexOf("+IPD,") == 0) {
+                let colon = _atPending.indexOf(":")
+                if (colon < 0) { if (_atPending.length > 64) _atPending = ""; break }
+                let header = _atPending.substr(0, colon).split(",")
+                let count = parseInt(header[header.length - 1])
+                _atPending = _atPending.substr(colon + 1)
+                if (isNaN(count) || count < 0 || count > 2048) { _atPending = ""; break }
+                _atPayloadLeft = count
+                continue
+            }
+            if (_atPending.length < 5 && "+IPD,".indexOf(_atPending) == 0) break
+            _lastAtText += _atPending.charAt(0)
+            _atPending = _atPending.substr(1)
+        }
+        return raw
+    }
+    function _wsConfigure(): void {
+        _netBuffer = ""; _wsSpill = ""; _wsLastSendOK = false
+        _atPending = ""; _atPayloadLeft = 0; _lastAtText = ""
+        _wsLastMsg = ""; _wsPrevMsg = ""; _wsMsgReady = false; _wsAnyReady = false
+        _wsMsgConsumed = true; _wsAnyConsumed = true; _wsParsedData = ""; _wsLastRx = 0
+        BrixelWebSocket.configure(_sendPacket, (id: number, message: string) => {
+            _wsLink = id
+            let lines = message.split("\n")
+            for (let i=0;i<lines.length;i++) _handleWsLine(lines[i])
+        })
+    }
+    // Read the exact UTF-8/binary byte count requested by ESP-AT, waiting for its prompt and SEND OK.
+    function _sendPacket(id: number, packet: Buffer): boolean {
+        if (id < 0 || id > 4 || packet.length > 2048 || _wsPollPaused) return false
+        _wsPollPaused = true
+        _claimUart()
+        serial.writeString("AT+CIPSEND=" + id + "," + packet.length + "\r\n")
+        let response = "", start = control.millis(), prompt = false
+        while (control.millis() - start < 1000 && USBSerial.uartIsOwner(USBSerial.UartOwner.WiFi)) {
+            let chunk = _readBinary(); _spill(chunk); response += _lastAtText
+            if (response.indexOf(">") >= 0) { prompt = true; break }
+            if (response.indexOf("ERROR") >= 0 || response.indexOf("FAIL") >= 0) break
+            if (response.length > 4096) break
+            basic.pause(5)
+        }
+        let success = false
+        if (prompt) {
+            serial.writeBuffer(packet)
+            response = ""; start = control.millis()
+            while (control.millis() - start < 2000 && USBSerial.uartIsOwner(USBSerial.UartOwner.WiFi)) {
+                let chunk = _readBinary(); _spill(chunk); response += _lastAtText
+                if (response.indexOf("SEND OK") >= 0) { success = true; break }
+                if (response.indexOf("ERROR") >= 0 || response.indexOf("FAIL") >= 0) break
+                if (response.length > 4096) break
+                basic.pause(5)
+            }
+        }
+        _wsPollPaused = false
+        return success
+    }
+    // TCP segmentation and WebSocket fragmentation are separate: +IPD boundaries are not message boundaries.
+    function _consumeNetwork(chunk: string): void {
+        _netBuffer += chunk
+        if (_netBuffer.length > 4096) { _wsConfigure(); return }
+        for (let turn=0;turn<16;turn++) {
+            let start = _netBuffer.indexOf("+IPD,")
+            let prefix = start < 0 ? _netBuffer : _netBuffer.substr(0,start)
+            for(let id=0;id<5;id++) if(prefix.indexOf(id+",CLOSED")>=0) BrixelWebSocket.reset(id)
+            if(start<0) { if(_netBuffer.length>64)_netBuffer=_netBuffer.substr(_netBuffer.length-64); break }
+            if(start>0)_netBuffer=_netBuffer.substr(start)
+            let colon=_netBuffer.indexOf(":")
+            if(colon<0)break
+            let header=_netBuffer.substr(0,colon).split(",")
+            let id=header.length==3?parseInt(header[1]):-1
+            let count=header.length==3?parseInt(header[2]):-1
+            if(id<0 || id>4 || isNaN(id) || count<0 || count>2048 || isNaN(count)) { _wsConfigure(); return }
+            if(_netBuffer.length<colon+1+count)break
+            let payload=_netBuffer.substr(colon+1,count)
+            _netBuffer=_netBuffer.substr(colon+1+count)
+            BrixelWebSocket.feed(id,payload)
+        }
+        for(let id=0;id<5;id++)BrixelWebSocket.feed(id,"")
+    }
     function _ensureWsPoll(): void {
         if (_wsPollStarted) return
         _wsPollStarted = true
-        // RX 링을 20B 에서 254B 로 키운다. 안 키우면 +IPD 페이로드가 19바이트에서 잘린다.
         USBSerial.uartEnsureRxBuffer()
         control.inBackground(() => {
-            let buf = ""
             while (true) {
-                // 다른 UART 장치(PMS·GPS·MP3·USB)가 주인이면 읽지 않는다.
-                // (읽으면 그쪽 응답을 가로채 양쪽 다 깨진다. 그동안의 바이트는 어차피
-                //  못 받으므로, 끊긴 반쪽 프레임이 다음 프레임에 붙지 않도록 비운다)
                 if (!USBSerial.uartIsOwner(USBSerial.UartOwner.WiFi)) {
-                    buf = ""
-                    _wsSpill = ""
-                    basic.pause(20)
-                    continue
+                    _wsConfigure(); basic.pause(20); continue
                 }
-                // AT 응답을 기다리는 동안에는 _at 이 대신 읽는다. 여기서 같이 읽으면
-                // 응답을 가로채 양쪽 다 깨지므로 잠깐 비켜준다.
-                // ★ 이때 buf 를 비우면 안 된다. _at 이 읽어간 바이트를 _wsSpill 로
-                //   그대로 돌려주므로 반쪽 프레임이 끊기지 않고 이어진다.
-                if (_wsPollPaused) {
-                    basic.pause(5)
-                    continue
-                }
-                let chunk = serial.readString()
-                // _at 이 대신 읽어둔 바이트를 먼저 이어붙인다 (도착 순서를 지킨다)
-                if (_wsSpill.length > 0) {
-                    chunk = _wsSpill + chunk
-                    _wsSpill = ""
-                }
-                if (chunk && chunk.length > 0) {
-                    buf += chunk
-                    let ipdIdx = buf.indexOf("+IPD")
-                    while (ipdIdx >= 0) {
-                        let colon = buf.indexOf(":", ipdIdx)
-                        if (colon < 0) break
-                        let header = buf.substr(ipdIdx, colon - ipdIdx)
-                        let parts = header.split(",")
-                        // CIPMUX=1 이면 헤더가 "+IPD,<링크ID>,<길이>" 다.
-                        // 이 링크 ID 를 기억해야 응답을 그 클라이언트에게 보낼 수 있다
-                        // (예전엔 버리고 CIPSEND=0 으로 고정 → 링크 1 이후 전송이 죽었다)
-                        if (parts.length >= 3) {
-                            let id = parseInt(parts[1])
-                            if (!isNaN(id) && id >= 0) _wsLink = id
-                        }
-                        let len = parseInt(parts[parts.length - 1])
-                        if (isNaN(len) || len <= 0) {
-                            buf = buf.substr(colon + 1)
-                            ipdIdx = buf.indexOf("+IPD")
-                            continue
-                        }
-                        if (buf.length < colon + 1 + len) break
-                        let payload = buf.substr(colon + 1, len)
-                        buf = buf.substr(colon + 1 + len)
-                        let lines = payload.split("\n")
-                        for (let i = 0; i < lines.length; i++) {
-                            if (lines[i].length > 0) _handleWsLine(lines[i])
-                        }
-                        ipdIdx = buf.indexOf("+IPD")
-                    }
-                    if (buf.length > 1024) buf = buf.substr(buf.length - 512)
-                }
-                // 5ms. 20ms 로 쉬면 115200bps 에서 ~230바이트가 흘러가 링이 넘친다.
+                if (_wsPollPaused) { basic.pause(5); continue }
+                let chunk = _wsSpill + _readBinary(); _wsSpill = ""
+                _consumeNetwork(chunk)
                 basic.pause(5)
             }
         })
@@ -283,6 +327,9 @@ namespace WiFi08 {
     //% port.defl=81 port.min=1 port.max=65535
     //% group="Settings" weight=99
     export function wsServerStart(port: number): void {
+        if (port < 1 || port > 65535 || port != Math.floor(port)) return
+        _wsConfigure()
+        _at("AT+CIPDINFO=0", 500)
         _at("AT+CIPMUX=1", 500)
         _at("AT+CIPSERVER=1," + port, 500)
         _ensureWsPoll()
@@ -314,19 +361,11 @@ namespace WiFi08 {
     //% value.defl="Hello"
     //% group="Send" weight=96
     export function wsSend(value: string): void {
-        _claimUart()                       // 다른 UART 장치가 주인이면 되찾는다
-        // Arduino 는 webSocket.broadcastTXT(String(v) + "\n") 로 LF 하나만 붙인다
-        // (15_comm.js wifi_ws_send). CR 까지 붙이면 받는 쪽 PC/브라우저가 문자열을
-        // 그대로 비교할 때 Arduino 빌드에는 없던 \r 이 딸려와 매칭이 어긋난다.
-        // 아래 CIPSEND 길이는 data.length 에서 계산하므로 함께 맞춰진다.
-        let data = value + "\n"
-        // 링크 ID 를 0 으로 고정하면 재접속·2번째 클라이언트(링크 1 이상)에게는
-        // 영영 못 보낸다. 폴러가 기억해 둔 마지막 +IPD 링크 ID 를 쓴다.
-        serial.writeString("AT+CIPSEND=" + _wsLink + "," + data.length + "\r\n")
-        basic.pause(100)
-        serial.writeString(data)
-        basic.pause(50)
+        _wsLastSendOK = BrixelWebSocket.sendText(_wsLink, value + "\n")
     }
+    /** False before sending, before WebSocket handshake, on timeout, or when the UTF-8 message exceeds 1024 bytes. */
+    //% block="WS last send succeeded?" group="Send" weight=95
+    export function wsSendSucceeded(): boolean { return _wsLastSendOK }
 
     //% block="📥 on WS message changed"
     //% group="Receive" weight=95
