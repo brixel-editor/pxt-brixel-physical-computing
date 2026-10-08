@@ -1,0 +1,17 @@
+{
+  "WiFi08.onWsMessageChanged|block": "📥 ligado WS mensagem alterado",
+  "WiFi08.wifiLocalIp|block": "📶 My IP endereço",
+  "WiFi08.wifiStart|block": "📶 WiFi início SSID %ssid senha %password",
+  "WiFi08.wsGetReceived|block": "📥 WS recebido valor",
+  "WiFi08.wsHasNew|block": "📥 WS novo mensagem?",
+  "WiFi08.wsParsedGet|block": "🔍 WS analisado %index th valor",
+  "WiFi08.wsParse|block": "🔍 WS analisar recebido with %delimiter",
+  "WiFi08.wsSend|block": "📤 WS enviar %value",
+  "AdvSensors.bmp280Calibrated|block": "BMP280 calibração carregada?",
+  "AdvSensors.bme280Calibrated|block": "BME280 calibração carregada?",
+  "AdvSensors.mpu6050Connected|block": "MPU6050 ligado?",
+  "AdvSensors.sgp30Ready|block": "SGP30 aquecido? (15s)",
+  "AdvSensors.i2cWeightTimedOut|block": "Sensor de peso I2C expirou?",
+  "AdvSensors.rtcTimeValid|block": "Hora RTC válida?",
+  "AdvSensors.apds9960ClearInterrupt|block": "APDS9960 limpar interrupção"
+}

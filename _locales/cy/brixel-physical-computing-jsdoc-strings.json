@@ -1,0 +1,15 @@
+{
+  "WiFi08.wifiStart|block": "📶 WiFi dechrau SSID %ssid cyfrinair %password",
+  "WiFi08.wsGetReceived|block": "📥 WS derbyniwyd gwerth",
+  "WiFi08.wsHasNew|block": "📥 WS newydd neges?",
+  "WiFi08.wsParsedGet|block": "🔍 WS dadansoddwyd %index th gwerth",
+  "WiFi08.wsParse|block": "🔍 WS dadansoddi derbyniwyd with %delimiter",
+  "WiFi08.wsSend|block": "📤 WS anfon %value",
+  "AdvSensors.bmp280Calibrated|block": "BMP280 graddnodi wedi llwytho?",
+  "AdvSensors.bme280Calibrated|block": "BME280 graddnodi wedi llwytho?",
+  "AdvSensors.mpu6050Connected|block": "MPU6050 wedi cysylltu?",
+  "AdvSensors.sgp30Ready|block": "SGP30 wedi cynhesu? (15e)",
+  "AdvSensors.i2cWeightTimedOut|block": "Synhwyrydd pwysau I2C wedi dod i ben?",
+  "AdvSensors.rtcTimeValid|block": "Amser RTC dilys?",
+  "AdvSensors.apds9960ClearInterrupt|block": "APDS9960 clirio ymyriad"
+}

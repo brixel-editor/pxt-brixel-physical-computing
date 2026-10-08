@@ -1,0 +1,23 @@
+{
+  "USBSerial.serialGetReceived|block": "📥 sarja vastaanotettu arvo",
+  "USBSerial.serialHasNew|block": "📥 sarja uusi viesti?",
+  "USBSerial.serialParsedGet|block": "🔍 sarja jäsennetty %index th arvo",
+  "USBSerial.uartIsOwner|block": "UART-omistaja päällä %dev ?",
+  "USBSerial.uartSwitch|block": "vaihda UART kohteeseen %dev",
+  "WiFi08.onWsMessageAny|block": "📥 päällä WS viesti mikä tahansa",
+  "WiFi08.onWsMessageChanged|block": "📥 päällä WS viesti muuttunut",
+  "WiFi08.wifiLocalIp|block": "📶 My IP osoite",
+  "WiFi08.wifiStart|block": "📶 WiFi alku SSID %ssid salasana %password",
+  "WiFi08.wsGetReceived|block": "📥 WS vastaanotettu arvo",
+  "WiFi08.wsHasNew|block": "📥 WS uusi viesti?",
+  "WiFi08.wsParsedGet|block": "🔍 WS jäsennetty %index th arvo",
+  "WiFi08.wsParse|block": "🔍 WS jäsennä vastaanotettu with %delimiter",
+  "WiFi08.wsSend|block": "📤 WS lähetä %value",
+  "AdvSensors.bmp280Calibrated|block": "BMP280 kalibrointi ladattu?",
+  "AdvSensors.bme280Calibrated|block": "BME280 kalibrointi ladattu?",
+  "AdvSensors.mpu6050Connected|block": "MPU6050 kytketty?",
+  "AdvSensors.sgp30Ready|block": "SGP30 lämmennyt? (15s)",
+  "AdvSensors.i2cWeightTimedOut|block": "I2C-painoanturi aikakatkaisu?",
+  "AdvSensors.rtcTimeValid|block": "RTC-aika kelvollinen?",
+  "AdvSensors.apds9960ClearInterrupt|block": "APDS9960 tyhjennä keskeytys"
+}

@@ -1,0 +1,17 @@
+{
+  "Sensors03.voltageRead|block": "voltage 센서 읽기 (V)|핀 %pin|maxvoltage %maxVoltage",
+  "USBSerial.UartOwner.Fingerprint|block": "지문센서",
+  "USBSerial.UartOwner.LoRa|block": "LoRa",
+  "USBSerial.UartOwner.MHZ19|block": "CO2 센서 (MH-Z19)",
+  "USBSerial.UartOwner.PMS|block": "미세먼지 센서 (PMS)",
+  "USBSerial.UartOwner.USB|block": "USB (컴퓨터)",
+  "USBSerial.uartIsOwner|block": "UART 주인이 %dev ?",
+  "USBSerial.uartSwitch|block": "UART 전환: %dev",
+  "AdvSensors.bmp280Calibrated|block": "BMP280 보정계수 로드됨?",
+  "AdvSensors.bme280Calibrated|block": "BME280 보정계수 로드됨?",
+  "AdvSensors.mpu6050Connected|block": "MPU6050 연결됨?",
+  "AdvSensors.sgp30Ready|block": "SGP30 예열 완료? (15초)",
+  "AdvSensors.i2cWeightTimedOut|block": "I2C 무게센서 시간초과?",
+  "AdvSensors.rtcTimeValid|block": "RTC 시각 유효?",
+  "AdvSensors.apds9960ClearInterrupt|block": "APDS9960 인터럽트 지우기"
+}

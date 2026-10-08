@@ -1,0 +1,17 @@
+{
+  "WiFi08.onWsMessageChanged|block": "📥 açık WS mesaj değişmiş",
+  "WiFi08.wifiLocalIp|block": "📶 My IP adres",
+  "WiFi08.wifiStart|block": "📶 WiFi başlangıç SSID %ssid parola %password",
+  "WiFi08.wsGetReceived|block": "📥 WS alınan değer",
+  "WiFi08.wsHasNew|block": "📥 WS yeni mesaj?",
+  "WiFi08.wsParsedGet|block": "🔍 WS ayrıştırılmış %index th değer",
+  "WiFi08.wsParse|block": "🔍 WS ayrıştır alınan with %delimiter",
+  "WiFi08.wsSend|block": "📤 WS gönder %value",
+  "AdvSensors.bmp280Calibrated|block": "BMP280 kalibrasyon yüklendi mi?",
+  "AdvSensors.bme280Calibrated|block": "BME280 kalibrasyon yüklendi mi?",
+  "AdvSensors.mpu6050Connected|block": "MPU6050 bağlı mı?",
+  "AdvSensors.sgp30Ready|block": "SGP30 ısındı mı? (15sn)",
+  "AdvSensors.i2cWeightTimedOut|block": "I2C ağırlık sensörü zaman aşımı?",
+  "AdvSensors.rtcTimeValid|block": "RTC saati geçerli mi?",
+  "AdvSensors.apds9960ClearInterrupt|block": "APDS9960 kesmeyi temizle"
+}

@@ -1,0 +1,19 @@
+{
+  "USBSerial.uartSwitch|block": "skipta UART yfir í %dev",
+  "WiFi08.onWsMessageAny|block": "📥 á WS skilaboð hvaða",
+  "WiFi08.onWsMessageChanged|block": "📥 á WS skilaboð breytt",
+  "WiFi08.wifiLocalIp|block": "📶 My IP vistfang",
+  "WiFi08.wifiStart|block": "📶 WiFi byrjun SSID %ssid lykilorð %password",
+  "WiFi08.wsGetReceived|block": "📥 WS móttekið gildi",
+  "WiFi08.wsHasNew|block": "📥 WS nýtt skilaboð?",
+  "WiFi08.wsParsedGet|block": "🔍 WS þáttað %index th gildi",
+  "WiFi08.wsParse|block": "🔍 WS þátta móttekið with %delimiter",
+  "WiFi08.wsSend|block": "📤 WS senda %value",
+  "AdvSensors.bmp280Calibrated|block": "BMP280 kvörðun hlaðin?",
+  "AdvSensors.bme280Calibrated|block": "BME280 kvörðun hlaðin?",
+  "AdvSensors.mpu6050Connected|block": "MPU6050 tengt?",
+  "AdvSensors.sgp30Ready|block": "SGP30 upphitað? (15s)",
+  "AdvSensors.i2cWeightTimedOut|block": "I2C vigtarskynjari tímamörk?",
+  "AdvSensors.rtcTimeValid|block": "RTC tími gildur?",
+  "AdvSensors.apds9960ClearInterrupt|block": "APDS9960 hreinsa ígrip"
+}

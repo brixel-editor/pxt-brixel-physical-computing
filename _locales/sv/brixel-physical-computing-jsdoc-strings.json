@@ -1,0 +1,4 @@
+{
+  "AdvSensors.rtcTimeValid|block": "RTC-tid giltig?",
+  "AdvSensors.apds9960ClearInterrupt|block": "APDS9960 rensa avbrott"
+}

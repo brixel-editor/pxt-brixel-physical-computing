@@ -1,0 +1,19 @@
+{
+  "USBSerial.uartIsOwner|block": "propietari de l’UART és %dev ?",
+  "WiFi08.onWsMessageAny|block": "📥 encès WS missatge qualsevol",
+  "WiFi08.onWsMessageChanged|block": "📥 encès WS missatge canviat",
+  "WiFi08.wifiLocalIp|block": "📶 My IP adreça",
+  "WiFi08.wifiStart|block": "📶 WiFi inici SSID %ssid contrasenya %password",
+  "WiFi08.wsGetReceived|block": "📥 WS rebut valor",
+  "WiFi08.wsHasNew|block": "📥 WS nou missatge?",
+  "WiFi08.wsParsedGet|block": "🔍 WS analitzat %index th valor",
+  "WiFi08.wsParse|block": "🔍 WS analitza rebut with %delimiter",
+  "WiFi08.wsSend|block": "📤 WS envia %value",
+  "AdvSensors.bmp280Calibrated|block": "BMP280 calibratge carregat?",
+  "AdvSensors.bme280Calibrated|block": "BME280 calibratge carregat?",
+  "AdvSensors.mpu6050Connected|block": "MPU6050 connectat?",
+  "AdvSensors.sgp30Ready|block": "SGP30 escalfat? (15s)",
+  "AdvSensors.i2cWeightTimedOut|block": "Sensor de pes I2C esgotat?",
+  "AdvSensors.rtcTimeValid|block": "Hora RTC vàlida?",
+  "AdvSensors.apds9960ClearInterrupt|block": "APDS9960 esborra interrupció"
+}

@@ -1,0 +1,6 @@
+{
+  "AdvSensors.sgp30Ready|block": "SGP30 warmed up? (15s)",
+  "AdvSensors.i2cWeightTimedOut|block": "I2C weight sensor timed out?",
+  "AdvSensors.rtcTimeValid|block": "RTC time valid?",
+  "AdvSensors.apds9960ClearInterrupt|block": "APDS9960 clear interrupt"
+}

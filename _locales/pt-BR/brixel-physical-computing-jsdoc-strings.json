@@ -1,0 +1,11 @@
+{
+  "WiFi08.wsParsedGet|block": "🔍 WS analisado %index th valor",
+  "WiFi08.wsParse|block": "🔍 WS analisar recebido with %delimiter",
+  "AdvSensors.bmp280Calibrated|block": "BMP280 calibração carregada?",
+  "AdvSensors.bme280Calibrated|block": "BME280 calibração carregada?",
+  "AdvSensors.mpu6050Connected|block": "MPU6050 conectado?",
+  "AdvSensors.sgp30Ready|block": "SGP30 aquecido? (15s)",
+  "AdvSensors.i2cWeightTimedOut|block": "Sensor de peso I2C expirou?",
+  "AdvSensors.rtcTimeValid|block": "Hora RTC válida?",
+  "AdvSensors.apds9960ClearInterrupt|block": "APDS9960 limpar interrupção"
+}

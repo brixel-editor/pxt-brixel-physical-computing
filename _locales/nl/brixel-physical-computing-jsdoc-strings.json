@@ -1,0 +1,13 @@
+{
+  "WiFi08.wsHasNew|block": "📥 WS nieuw bericht?",
+  "WiFi08.wsParsedGet|block": "🔍 WS geparsed %index th waarde",
+  "WiFi08.wsParse|block": "🔍 WS parsen ontvangen with %delimiter",
+  "WiFi08.wsSend|block": "📤 WS sturen %value",
+  "AdvSensors.bmp280Calibrated|block": "BMP280 kalibratie geladen?",
+  "AdvSensors.bme280Calibrated|block": "BME280 kalibratie geladen?",
+  "AdvSensors.mpu6050Connected|block": "MPU6050 verbonden?",
+  "AdvSensors.sgp30Ready|block": "SGP30 opgewarmd? (15s)",
+  "AdvSensors.i2cWeightTimedOut|block": "I2C weegsensor time-out?",
+  "AdvSensors.rtcTimeValid|block": "RTC-tijd geldig?",
+  "AdvSensors.apds9960ClearInterrupt|block": "APDS9960 interrupt wissen"
+}

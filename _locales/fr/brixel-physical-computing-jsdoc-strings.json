@@ -1,0 +1,23 @@
+{
+  "USBSerial.serialGetReceived|block": "📥 série reçu valeur",
+  "USBSerial.serialHasNew|block": "📥 série nouveau message?",
+  "USBSerial.serialParsedGet|block": "🔍 série analysé %index th valeur",
+  "USBSerial.uartIsOwner|block": "propriétaire UART est %dev ?",
+  "USBSerial.uartSwitch|block": "basculer UART vers %dev",
+  "WiFi08.onWsMessageAny|block": "📥 allumé WS message tout",
+  "WiFi08.onWsMessageChanged|block": "📥 allumé WS message modifié",
+  "WiFi08.wifiLocalIp|block": "📶 My IP adresse",
+  "WiFi08.wifiStart|block": "📶 WiFi début SSID %ssid mot de passe %password",
+  "WiFi08.wsGetReceived|block": "📥 WS reçu valeur",
+  "WiFi08.wsHasNew|block": "📥 WS nouveau message?",
+  "WiFi08.wsParsedGet|block": "🔍 WS analysé %index th valeur",
+  "WiFi08.wsParse|block": "🔍 WS analyser reçu with %delimiter",
+  "WiFi08.wsSend|block": "📤 WS envoyer %value",
+  "AdvSensors.bmp280Calibrated|block": "BMP280 calibration chargée ?",
+  "AdvSensors.bme280Calibrated|block": "BME280 calibration chargée ?",
+  "AdvSensors.mpu6050Connected|block": "MPU6050 connecté ?",
+  "AdvSensors.sgp30Ready|block": "SGP30 préchauffé ? (15s)",
+  "AdvSensors.i2cWeightTimedOut|block": "Capteur de poids I2C expiré ?",
+  "AdvSensors.rtcTimeValid|block": "Heure RTC valide ?",
+  "AdvSensors.apds9960ClearInterrupt|block": "APDS9960 effacer interruption"
+}

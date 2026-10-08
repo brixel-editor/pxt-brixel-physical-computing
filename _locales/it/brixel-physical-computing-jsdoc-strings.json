@@ -1,0 +1,22 @@
+{
+  "USBSerial.serialHasNew|block": "📥 seriale nuovo messaggio?",
+  "USBSerial.serialParsedGet|block": "🔍 seriale analizzato %index th valore",
+  "USBSerial.uartIsOwner|block": "proprietario UART è %dev ?",
+  "USBSerial.uartSwitch|block": "passa UART a %dev",
+  "WiFi08.onWsMessageAny|block": "📥 acceso WS messaggio qualsiasi",
+  "WiFi08.onWsMessageChanged|block": "📥 acceso WS messaggio cambiato",
+  "WiFi08.wifiLocalIp|block": "📶 My IP indirizzo",
+  "WiFi08.wifiStart|block": "📶 WiFi inizio SSID %ssid password %password",
+  "WiFi08.wsGetReceived|block": "📥 WS ricevuto valore",
+  "WiFi08.wsHasNew|block": "📥 WS nuovo messaggio?",
+  "WiFi08.wsParsedGet|block": "🔍 WS analizzato %index th valore",
+  "WiFi08.wsParse|block": "🔍 WS analizza ricevuto with %delimiter",
+  "WiFi08.wsSend|block": "📤 WS invia %value",
+  "AdvSensors.bmp280Calibrated|block": "BMP280 calibrazione caricata?",
+  "AdvSensors.bme280Calibrated|block": "BME280 calibrazione caricata?",
+  "AdvSensors.mpu6050Connected|block": "MPU6050 connesso?",
+  "AdvSensors.sgp30Ready|block": "SGP30 riscaldato? (15s)",
+  "AdvSensors.i2cWeightTimedOut|block": "Sensore peso I2C scaduto?",
+  "AdvSensors.rtcTimeValid|block": "Ora RTC valida?",
+  "AdvSensors.apds9960ClearInterrupt|block": "APDS9960 cancella interrupt"
+}

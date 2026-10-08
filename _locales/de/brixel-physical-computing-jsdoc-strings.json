@@ -1,0 +1,8 @@
+{
+  "AdvSensors.bme280Calibrated|block": "BME280 Kalibrierung geladen?",
+  "AdvSensors.mpu6050Connected|block": "MPU6050 verbunden?",
+  "AdvSensors.sgp30Ready|block": "SGP30 aufgewärmt? (15s)",
+  "AdvSensors.i2cWeightTimedOut|block": "I2C Wägezelle Zeitüberschreitung?",
+  "AdvSensors.rtcTimeValid|block": "RTC Zeit gültig?",
+  "AdvSensors.apds9960ClearInterrupt|block": "APDS9960 Interrupt löschen"
+}
