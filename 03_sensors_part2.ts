@@ -225,11 +225,13 @@ namespace Sensors03 {
     let _phPin: AnalogPin = AnalogPin.P0
     let _phRefVoltage: number = 3.3
     let _phOffset: number = 0.0
-    let _phNeutralVoltage: number = 1.5        // pH 7일 때 전압 (DFRobot_PH.cpp:33 의 1500.0mV)
+    // v0.4.0: 브릭셀 pH 모듈(E-201-C) 레퍼런스(랜딩 ESP32 4.13) = pH7 1650mV · 170mV/pH(산성일수록 높음).
+    //   예전 기본값은 DFRobot SEN0161 의 1.5V / 2.03244V 였다 — 브릭셀 모듈은 3.3V 중간점(1.65V)이 중성.
+    let _phNeutralVoltage: number = 1.65       // pH 7일 때 전압
     // pH 4일 때 전압. 아두이노 라이브러리 기본값은 2032.44mV 다(DFRobot_PH.cpp:33, :56).
     // 2.0V 로 두면 무보정 기울기가 (2000-1500)/3 = 166.67 이라 아두이노의 177.48 보다 6.5% 가팔라서,
     // 1.000V 인 시료가 MakeCode 10.00 / 아두이노 9.82 로 갈렸다.
-    let _phAcidVoltage: number = 2.03244
+    let _phAcidVoltage: number = 2.16          // pH 4일 때 전압 = 1.65 + 3 × 0.170
     let _phAlkaliVoltage: number = 0     // pH 10일 때 전압 (0 = 아직 보정하지 않음)
 
     // SEN0161-V2 보드가 내놓는 표준 버퍼 용액 전압 창 (DFRobot_PH.cpp:161-184).
@@ -246,8 +248,8 @@ namespace Sensors03 {
         _phPin = pin
         _phRefVoltage = 3.3
         _phOffset = 0.0
-        _phNeutralVoltage = 1.5
-        _phAcidVoltage = 2.03244   // DFRobot_PH 의 pH4.0@25°C 기본값 2032.44mV
+        _phNeutralVoltage = 1.65   // 브릭셀 E-201-C 모듈 pH7 기본값 1650mV
+        _phAcidVoltage = 2.16      // 1650mV + 3 × 170mV/pH
         _phAlkaliVoltage = 0   // 셋업을 다시 하면 예전 알칼리 보정점도 지운다
     }
 
@@ -1012,6 +1014,11 @@ namespace Sensors03 {
         if (raw < 0 || raw >= 1023) return -1
         let voltage = raw * 3300 / 1023
         if (dtype == UVDataType.Voltage) return Math.round(voltage)
+        // v0.4.0: UV 지수는 보정 없이도 GUVA-S12SD 데이터시트 근사 «UV 지수 = 출력 mV ÷ 100»
+        //   (브릭셀 레퍼런스 ESP32 4.12 와 같은 식). 영점·기준 보정을 하면 그 값을 쓴다.
+        //   세기(mW/cm²)는 근사식이 없어 여전히 보정 전 -1.
+        if (dtype == UVDataType.UVIndex && (_uvZero < 0 || _uvIndexPerMv <= 0))
+            return Math.round(voltage / 100 * 100) / 100
         let gain = dtype == UVDataType.UVIndex ? _uvIndexPerMv : _uvIntensityPerMv
         if (_uvZero < 0 || gain <= 0) return -1
         return Math.round(Math.max(0, voltage - _uvZero) * gain * 100) / 100

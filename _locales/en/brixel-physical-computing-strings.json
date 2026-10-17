@@ -861,5 +861,9 @@
   "Actuators05.pca9685ServoInit|block": "PCA9685 servo driver start address $addr",
   "Actuators05.pca9685ServoPulse|block": "PCA9685 servo address $addr channel $channel pulse $micros us",
   "Actuators05.pca9685ServoAngle|block": "PCA9685 servo address $addr channel $channel angle $angle",
-  "Actuators05.pca9685ServoRelease|block": "PCA9685 servo address $addr channel $channel release"
+  "Actuators05.pca9685ServoRelease|block": "PCA9685 servo address $addr channel $channel release",
+  "AdvSensors.BMP280Type.Altitude|block": "altitude(m)",
+  "AdvSensors.bmp280SetZero|block": "BMP280 set altitude zero here",
+  "Sensors03.ACS712Type.ACS712_1A|block": "BRIXEL 1A (1000mV/A)",
+  "Sensors03.acs712SetZero|block": "ACS712 set zero (no current) pin %pin"
 }

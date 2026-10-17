@@ -452,6 +452,8 @@ namespace Sensors03 {
 
     // ACS712 감도 타입
     export enum ACS712Type {
+        //% block="BRIXEL 1A (1000mV/A)"
+        ACS712_1A = 1000,
         //% block="5A (185mV/A)"
         ACS712_5A = 185,
         //% block="20A (100mV/A)"
@@ -475,8 +477,26 @@ namespace Sensors03 {
         // 직결 시 micro:bit ADC 상한이 3.3V 라 20A 모듈 기준 약 -25A ~ +8A 만 읽히고
         // 그 위는 ADC 가 1023 에 붙어 잘린다. 큰 + 전류를 재려면 5A 모듈을 쓰는 편이 낫다.
         let voltage = raw * 3.3 / 1023
-        let current = (voltage - 2.5) / (sensorType / 1000)
+        // v0.4.0: 영점을 재 두었으면(전류 0 일 때 «ACS712 zero») 2.5V 대신 그 값을 쓴다 — 브릭셀
+        //   레퍼런스(ESP32 4.18)도 시작할 때 무전류 전압을 재 영점으로 쓴다(모듈마다 영점이 조금씩 다름).
+        let zeroIdx = _acsZeroPins.indexOf(pin)
+        let zero = zeroIdx >= 0 ? _acsZeroV[zeroIdx] : 2.5
+        let current = (voltage - zero) / (sensorType / 1000)
         return Math.round(current * 100) / 100
+    }
+
+    let _acsZeroPins: number[] = []
+    let _acsZeroV: number[] = []
+    /** Measure the no-current output voltage of an ACS712 module on this pin (run with no current flowing). 5V module: use P10, the only 5V analog pin on the micro:bit Shield V2. */
+    //% block="ACS712 set zero (no current) pin %pin"
+    //% pin.defl=AnalogPin.P10
+    //% group="전류 센서(ACS712)" weight=59
+    export function acs712SetZero(pin: AnalogPin): void {
+        let raw = BrixelInternal.calibrationAnalog(pin)
+        if (raw <= 0 || raw >= 1023) return
+        let i = _acsZeroPins.indexOf(pin)
+        if (i < 0) { _acsZeroPins.push(pin); _acsZeroV.push(raw * 3.3 / 1023) }
+        else _acsZeroV[i] = raw * 3.3 / 1023
     }
 
 

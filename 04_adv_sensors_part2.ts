@@ -47,7 +47,7 @@ namespace AdvSensors {
         //   여기서만 STOP 방식으로 따로 읽고 정규화도 따로 해서, 같은 샘플에 대해
         //   tcs34725Read 와 서로 다른 결과를 낼 수 있었다.
         //   이제 두 블록 모두 tcs34725ReadRaw()/tcs34725Normalize() 를 공유한다.
-        tcs34725ReadRaw()
+        if (!tcs34725ReadRaw()) return -1   // v0.4.0: 센서 없음
         tcs34725Normalize()
 
         if (dtype == TCS34725DetectType.Raw) {
@@ -152,7 +152,7 @@ namespace AdvSensors {
     //% block="TCS34725 color read %color"
     //% group="색상감지(TCS34725)" weight=129
     export function tcs34725Read(color: RGBColor): number {
-        tcs34725ReadRaw()
+        if (!tcs34725ReadRaw()) return -1   // v0.4.0: 센서 없음
 
         // ★ 예전에는 원시 R/G/B/C 만 갱신하고 8비트 정규화 값과 판정 색상은 그대로 둬서,
         //   같은 그룹의 다른 블록(GetChannel·DetectedColor)이 낡은 값을 반환했다.
@@ -167,7 +167,9 @@ namespace AdvSensors {
     // 원시 C/R/G/B 4채널 읽기 (읽기 경로 공통)
     // ★ STATUS(0x93) 의 AVALID(bit0) 로 적분 완료를 확인한 뒤 반복시작으로 읽는다.
     //   최대 약 300ms(ATIME=0xC0 의 적분 153.6ms 의 2배 남짓)까지만 기다린다.
-    function tcs34725ReadRaw(): void {
+    function tcs34725ReadRaw(): boolean {
+        // v0.4.0: ACK 가 없으면 기다리지 않고 false (예전엔 300ms 기다린 뒤 0 을 색 값으로 냈다)
+        if (!BrixelInternal.i2cSelect(_tcs34725Addr, 0x80 | 0x13, false)) return false
         let wait = 30
         while (wait > 0) {
             pins.i2cWriteNumber(_tcs34725Addr, 0x80 | 0x13, NumberFormat.UInt8BE, true)
@@ -192,6 +194,7 @@ namespace AdvSensors {
         // Blue 데이터 읽기
         pins.i2cWriteNumber(_tcs34725Addr, 0x80 | 0x1A, NumberFormat.UInt8BE, true)
         _tcs34725B = pins.i2cReadNumber(_tcs34725Addr, NumberFormat.UInt16LE)
+        return true
     }
 
     // 원시값 → 8비트 정규화 + 색상 판정 갱신 (읽기 경로 공통)
@@ -256,21 +259,17 @@ namespace AdvSensors {
         // SMBus read: send register address
         // ★ repeat=true 필수. STOP 이 끼면 MLX90614 가 SMBus read 로 인식하지 않아
         //   포인터가 초기화되고 엉뚱한 바이트를 읽는다.
-        pins.i2cWriteNumber(_mlx90614Addr, cmd, NumberFormat.UInt8BE, true)
-
-        // Read 3 bytes (2 bytes data + 1 byte PEC)
-        let buf = pins.i2cReadBuffer(_mlx90614Addr, 3)
-
-        // Temperature calculation (raw value is in 0.02K units)
-        let raw = (buf[1] << 8) | buf[0]
-        // ★ RAM 워드의 bit15 는 에러 플래그이고, 유효 코드 범위는 0x27AD~0x7FFF 다.
-        //   예전에는 검사가 없어 에러 프레임이 382°C 로, 센서 미연결(버퍼 0)이 -273.15°C 로
-        //   그대로 나왔다. 범위를 벗어나면 직전 값을 요청한 단위로 돌려준다.
+        // v0.4.0: 센서 없음(ACK 없음)·범위 밖 값이면 -127(°F -196.6, K 146.15)
+        //   예전엔 마지막 값(처음엔 0°C)을 돌려 센서가 빠져도 0°C 로 보였다.
+        let raw = 0
+        if (BrixelInternal.i2cSelect(_mlx90614Addr, cmd, true)) {
+            let buf = pins.i2cReadBuffer(_mlx90614Addr, 3)
+            raw = (buf[1] << 8) | buf[0]
+        }
         if (raw < 0x27AD || raw > 0x7FFF) {
-            let c = source == MLX90614Source.Object ? _mlx90614ObjTemp : _mlx90614AmbTemp
-            if (unit == MLX90614TempUnit.Kelvin) return Math.round((c + 273.15) * 100) / 100
-            if (unit == MLX90614TempUnit.Fahrenheit) return Math.round((c * 9 / 5 + 32) * 100) / 100
-            return Math.round(c * 100) / 100
+            if (unit == MLX90614TempUnit.Kelvin) return 146.15
+            if (unit == MLX90614TempUnit.Fahrenheit) return -196.6
+            return -127
         }
         let tempK = raw * 0.02  // Kelvin temperature
 

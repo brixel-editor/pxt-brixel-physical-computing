@@ -36,12 +36,20 @@ namespace Sensors03 {
     //% block="HC-SR04 read distance unit %unit"
     //% group="초음파(HC-SR04)" weight=229
     export function hcsr04Read(unit: DistanceUnit): number {
-        pins.digitalWritePin(_hcsr04Trig, 0)
-        control.waitMicros(2)
-        pins.digitalWritePin(_hcsr04Trig, 1)
-        control.waitMicros(10)
-        pins.digitalWritePin(_hcsr04Trig, 0)
-        let d = pins.pulseIn(_hcsr04Echo, PulseValue.High, 30000)
+        // v0.4.0: 반향이 없으면(센서 없음·BLE 인터럽트로 펄스를 놓침) 60ms 쉬고 최대 3번까지 다시 잰다.
+        //   60ms = 데이터시트의 측정 주기 권장값(앞 펄스의 잔향이 사라질 시간). 끝내 없으면 -1.
+        //   pulseIn 시간 제한 30ms × 3 + 쉼 60ms × 2 → 센서가 없어도 최대 약 0.21초 안에 돌아온다.
+        let d = 0
+        for (let attempt = 0; attempt < 3; attempt++) {
+            if (attempt > 0) basic.pause(60)
+            pins.digitalWritePin(_hcsr04Trig, 0)
+            control.waitMicros(2)
+            pins.digitalWritePin(_hcsr04Trig, 1)
+            control.waitMicros(10)
+            pins.digitalWritePin(_hcsr04Trig, 0)
+            d = pins.pulseIn(_hcsr04Echo, PulseValue.High, 30000)
+            if (d > 0) break
+        }
         if (d <= 0) return -1 // no echo is not a distance of zero
         // 아두이노판 ultrasonic_distance 는 duration_us * (0.0343/2) 을 실수로 돌려준다
         // (= duration/58.31, 20°C 음속 343m/s). 기존 코드는 (1) 58 로 나눠 0.5% 크게 나왔고
@@ -83,8 +91,10 @@ namespace Sensors03 {
     }
 
     // DHT 데이터 저장 변수
-    let _dhtTemperature: number = 0
-    let _dhtHumidity: number = 0
+    // v0.4.0: 한 번도 성공하지 못했으면 온도 -127(°F -196.6)·습도 -1 = 배선·핀 확인 신호
+    //   (DSL마빗 펌웨어 `dht` 명령과 같은 관례). 실패하면 마지막 성공값을 그대로 둔다.
+    let _dhtTemperature: number = -127
+    let _dhtHumidity: number = -1
     let _dhtLastQuery: boolean = false
     let _dhtSensorResponding: boolean = false
     let _dhtTempUnit: TempUnit = TempUnit.Celsius
@@ -115,6 +125,7 @@ namespace Sensors03 {
     export function dhtRead(readType: DHTReadType): number {
         if (readType == DHTReadType.Temperature) {
             if (_dhtTempUnit == TempUnit.Fahrenheit) {
+                if (_dhtTemperature == -127 && _dhtHumidity == -1) return -196.6
                 return _dhtTemperature * 9 / 5 + 32
             }
             return _dhtTemperature
@@ -461,17 +472,10 @@ namespace Sensors03 {
         return found
     }
 
-    //% block="DS18B20 read sensor %index temperature (unit %unit)"
-    //% index.min=0 index.max=7 index.defl=0
-    //% group="물온도(DS18B20)" weight=213
-    export function ds18b20ReadTemp(index: number, unit: DS18B20Unit): number {
-        // 프레즌스 결과를 버리면 안 된다. 센서가 없을 때 0xFF/0xFF 를 읽어
-        // -0.06°C 라는 그럴듯한 가짜 값이 나오기 때문.
-        // ★ 실패값으로 0 을 쓰면 안 된다 — 이건 '물온도' 블록이고 0°C(얼음물)는 교실에서
-        //   실제로 나올 수 있는 값이라 학생이 진짜 측정값으로 믿는다. 아두이노판
-        //   DallasTemperature 와 동일하게 측정 범위(-55~125) 밖의 표식값을 돌려준다.
-        //   DEVICE_DISCONNECTED_C = -127, DEVICE_DISCONNECTED_F = -196.6
-        if (!ds18b20Reset()) return unit == DS18B20Unit.Fahrenheit ? -196.6 : -127
+    // 스크래치패드 9바이트 읽기 1회. 1 = 성공(_dsScratch 에 담김) · 0 = CRC 실패(재시도 가치 있음) · -1 = 장치/주소 없음
+    let _dsScratch: number[] = []
+    function ds18b20ReadScratchpad(index: number): number {
+        if (!ds18b20Reset()) return -1
 
         // 개수(_ds18b20Count)가 아니라 해당 index 의 ROM 존재 여부로 주소 지정 방식을 고른다.
         if (index >= 0 && _ds18b20Roms.length >= (index + 1) * 8) {
@@ -487,7 +491,7 @@ namespace Sensors03 {
             // 예전에는 index 를 버리고 Skip ROM 을 뿌려서 버스의 모든 센서가 동시에 응답했고,
             // 그 깨진 스크래치패드가 CRC 에서 걸려 'read sensor 0' 과 'read sensor 1' 이
             // 둘 다 같은 값(얼음물로 오해하기 쉬운 0°C)을 내놓았다.
-            return unit == DS18B20Unit.Fahrenheit ? -196.6 : -127
+            return -1
         }
         // Read Scratchpad (0xBE)
         ds18b20WriteByte(0xBE)
@@ -495,7 +499,30 @@ namespace Sensors03 {
         // 스크래치패드 9바이트를 모두 읽어 CRC 로 검증 (9번째 바이트가 바이트0~7 의 CRC8)
         let sp: number[] = []
         for (let k = 0; k < 9; k++) sp.push(ds18b20ReadByte())
-        if (ds18b20Crc8(sp, 9) != 0) return unit == DS18B20Unit.Fahrenheit ? -196.6 : -127
+        if (ds18b20Crc8(sp, 9) != 0) return 0
+        _dsScratch = sp
+        return 1
+    }
+
+    //% block="DS18B20 read sensor %index temperature (unit %unit)"
+    //% index.min=0 index.max=7 index.defl=0
+    //% group="물온도(DS18B20)" weight=213
+    export function ds18b20ReadTemp(index: number, unit: DS18B20Unit): number {
+        // 프레즌스 결과를 버리면 안 된다. 센서가 없을 때 0xFF/0xFF 를 읽어
+        // -0.06°C 라는 그럴듯한 가짜 값이 나오기 때문.
+        // ★ 실패값으로 0 을 쓰면 안 된다 — 이건 '물온도' 블록이고 0°C(얼음물)는 교실에서
+        //   실제로 나올 수 있는 값이라 학생이 진짜 측정값으로 믿는다. 아두이노판
+        //   DallasTemperature 와 동일하게 측정 범위(-55~125) 밖의 표식값을 돌려준다.
+        //   DEVICE_DISCONNECTED_C = -127, DEVICE_DISCONNECTED_F = -196.6
+        // v0.4.0: CRC 가 깨지면(BLE 인터럽트가 1-Wire 슬롯 타이밍을 깸) 변환은 다시 하지 않고
+        //   «스크래치패드 읽기»만 최대 3번 다시 한다(몇 ms). 끝내 실패하면 -127(°F -196.6).
+        let sp: number[] = null
+        for (let attempt = 0; attempt < 3 && !sp; attempt++) {
+            let r = ds18b20ReadScratchpad(index)
+            if (r == -1) break                 // 장치 없음·주소 없음 — 재시도해도 같다
+            if (r == 1) sp = _dsScratch
+        }
+        if (!sp) return unit == DS18B20Unit.Fahrenheit ? -196.6 : -127
 
         // 온도 계산
         let temp = (sp[1] << 8) | sp[0]

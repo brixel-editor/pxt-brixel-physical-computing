@@ -318,7 +318,9 @@ namespace AdvSensors {
         //% block="pressure(hPa)"
         Pressure = 0,
         //% block="temperature(°C)"
-        Temperature = 1
+        Temperature = 1,
+        //% block="altitude(m)"
+        Altitude = 2
     }
 
     // BMP280 데이터 저장 변수
@@ -421,7 +423,11 @@ namespace AdvSensors {
     //% group="대기압(BMP280)" weight=169
     export function bmp280Read(btype: BMP280Type): number {
         // 기압 데이터 읽기 (0xF7~0xF9)
-        pins.i2cWriteNumber(_bmp280Addr, 0xF7, NumberFormat.UInt8BE)
+        // v0.4.0: 센서가 없거나(ACK 없음) 보정값을 못 읽었으면 실패값 — 기압 -1 · 온도 -127 · 고도 -999
+        //   (예전엔 0 을 돌려 0°C·0hPa 처럼 보였다). 고도는 음수가 정상이라 -999.
+        if (!_bmpCalOk || !BrixelInternal.i2cSelect(_bmp280Addr, 0xF7, false)) {
+            return btype == BMP280Type.Pressure ? -1 : btype == BMP280Type.Temperature ? -127 : -999
+        }
         let buf = pins.i2cReadBuffer(_bmp280Addr, 6)
 
         let pressRaw = (buf[0] << 12) | (buf[1] << 4) | (buf[2] >> 4)
@@ -440,7 +446,22 @@ namespace AdvSensors {
         if (btype == BMP280Type.Temperature) {
             return _bmp280Temp
         }
+        if (btype == BMP280Type.Altitude) {
+            // 국제표준대기 공식 h = 44330 × (1 − (P/P0)^(1/5.255)) — 브릭셀 레퍼런스(ESP32 5.08)·DSL마빗 펌웨어와 같다.
+            //   P0 기본 = 해면기압 1013.25hPa(날씨에 따라 수십 m 틀림). «BMP280 set altitude zero» 를 하면 그 자리가 0m.
+            if (_bmp280Pressure <= 0) return -999
+            return Math.round(44330 * (1 - Math.pow(_bmp280Pressure / _bmp280SeaLevel, 1 / 5.255)) * 100) / 100
+        }
         return _bmp280Pressure
+    }
+
+    let _bmp280SeaLevel = 1013.25
+    /** Make the current place 0 m for the altitude reading (stores the current pressure as the reference). */
+    //% block="BMP280 set altitude zero here"
+    //% group="대기압(BMP280)" weight=89
+    export function bmp280SetZero(): void {
+        let p = bmp280Read(BMP280Type.Pressure)
+        if (p > 0) _bmp280SeaLevel = p
     }
 
 
@@ -547,7 +568,9 @@ namespace AdvSensors {
         //   읽는다(가속도 6 + 온도 2 + 자이로 6). 예전처럼 세 번 나눠 읽으면 가속도와
         //   자이로가 서로 다른 샘플 시점의 값이 되어 같은 순간을 설명하지 못하고,
         //   버스 트래픽도 3배가 된다.
-        pins.i2cWriteNumber(_mpu6050Addr, 0x3B, NumberFormat.UInt8BE, true)
+        // v0.4.0: ACK 가 없으면 값을 갱신하지 않고 «연결 안 됨» 으로 표시 → 읽기 블록이 -999
+        _mpu6050Present = BrixelInternal.i2cSelect(_mpu6050Addr, 0x3B, true)
+        if (!_mpu6050Present) return
         let buf14 = pins.i2cReadBuffer(_mpu6050Addr, 14)
 
         let rawAccelX = (buf14[0] << 8) | buf14[1]
@@ -591,6 +614,7 @@ namespace AdvSensors {
     //% dtype.defl=AdvSensors.MPU6050DataType.Temperature
     //% group="6축 가속도(MPU6050)" weight=163
     export function mpu6050ReadValue(dtype: MPU6050DataType): number {
+        if (!_mpu6050Present) return -999   // v0.4.0: 센서 없음(가속도 0g·-1g 는 정상값이라 -999)
         if (dtype == MPU6050DataType.Temperature) return _mpu6050Temp
         if (dtype == MPU6050DataType.AccelX) return _mpu6050AccelX
         if (dtype == MPU6050DataType.AccelY) return _mpu6050AccelY
@@ -705,7 +729,7 @@ namespace AdvSensors {
             reg = 0x41
         }
 
-        pins.i2cWriteNumber(_mpu6050Addr, reg, NumberFormat.UInt8BE)
+        if (!BrixelInternal.i2cSelect(_mpu6050Addr, reg, false)) return -999   // v0.4.0: 센서 없음
         let val = pins.i2cReadNumber(_mpu6050Addr, NumberFormat.Int16BE)
 
         if (mtype == MPU6050Type.Temp) {
@@ -1092,8 +1116,10 @@ namespace AdvSensors {
     }
 
     // SHT30 데이터 저장 변수
-    let _sht30Temperature: number = 0
-    let _sht30Humidity: number = 0
+    // v0.4.0: 마지막 질의가 실패했으면(센서 없음·CRC 오류 2번) 온도 -127 · 습도 -1
+    let _sht30Temperature: number = -127
+    let _sht30Humidity: number = -1
+    let _sht30Ok = false
     let _sht30Addr: number = 0x44
 
     //% block="SHT30 init address %addr"
@@ -1115,18 +1141,18 @@ namespace AdvSensors {
     //% block="SHT30 start measurement"
     //% group="온습도(I2C-SHT30)" weight=144
     export function sht30Query(): void {
-        // 측정 명령 전송 (Single Shot, High Repeatability)
-        pins.i2cWriteNumber(_sht30Addr, 0x2400, NumberFormat.UInt16BE)
-
-        // 측정 대기 (15ms)
-        basic.pause(15)
-
-        // 6바이트 읽기 (온도2 + CRC + 습도2 + CRC)
-        let buf = pins.i2cReadBuffer(_sht30Addr, 6)
-
-        // ★ CRC 검증 — 예전에는 CRC 바이트를 읽고도 버렸다.
-        //   변환이 아직 안 끝났거나 잡음이 끼면 엉뚱한 온습도가 그대로 나갔다.
-        if (crc8Sensirion(buf[0], buf[1]) != buf[2] || crc8Sensirion(buf[3], buf[4]) != buf[5]) return
+        // v0.4.0: 응답이 없으면 곧바로 실패. CRC 가 깨지면 한 번 더 잰다(최대 2번 × 15ms).
+        let buf: Buffer = null
+        for (let attempt = 0; attempt < 2 && !buf; attempt++) {
+            let cmd = pins.createBuffer(2)
+            cmd[0] = 0x24; cmd[1] = 0x00
+            if ((pins.i2cWriteBuffer(_sht30Addr, cmd) | 0) != 0) break
+            basic.pause(15)
+            let b = pins.i2cReadBuffer(_sht30Addr, 6)
+            if (crc8Sensirion(b[0], b[1]) == b[2] && crc8Sensirion(b[3], b[4]) == b[5]) buf = b
+        }
+        _sht30Ok = !!buf
+        if (!buf) return
 
         // 온도 계산
         let tempRaw = (buf[0] << 8) | buf[1]
@@ -1140,6 +1166,7 @@ namespace AdvSensors {
     //% block="SHT30 read temperature (unit %unit)"
     //% group="온습도(I2C-SHT30)" weight=143
     export function sht30ReadTemp(unit: TempUnit): number {
+        if (!_sht30Ok) return unit == TempUnit.Fahrenheit ? -196.6 : -127
         if (unit == TempUnit.Fahrenheit) {
             return _sht30Temperature * 9 / 5 + 32
         }
@@ -1149,6 +1176,7 @@ namespace AdvSensors {
     //% block="SHT30 read humidity"
     //% group="온습도(I2C-SHT30)" weight=142
     export function sht30ReadHumidity(): number {
+        if (!_sht30Ok) return -1
         return _sht30Humidity
     }
 
