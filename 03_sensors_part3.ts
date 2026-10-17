@@ -60,6 +60,7 @@ namespace Sensors03 {
     //% rl.defl=10 vc.defl=5 divider.defl=2
     //% group="가스(MQ 계열)" weight=109
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function mqConfig(rl: number, vc: number, divider: number): void {
         if (rl > 0) _mqRL = rl
         if (vc > 0) _mqVc = vc
@@ -80,6 +81,7 @@ namespace Sensors03 {
     //% block="MQ %sensor calibrate R0 in clean air, pin %pin"
     //% group="가스(MQ 계열)" weight=108
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function mqCalibrate(sensor: MQSensor, pin: AnalogPin): number {
         // 노이즈 억제를 위해 여러 번 읽어 평균
         let sum = 0
@@ -94,6 +96,7 @@ namespace Sensors03 {
 
     //% block="MQ %sensor R0 (kΩ)"
     //% group="가스(MQ 계열)" weight=107
+    //% blockHidden=true
     export function mqGetR0(sensor: MQSensor): number {
         return _mqR0[sensor]
     }
@@ -101,6 +104,7 @@ namespace Sensors03 {
     //% block="MQ %sensor read concentration (ppm) pin %pin"
     //% group="가스(MQ 계열)" weight=106
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function mqReadPPM(sensor: MQSensor, pin: AnalogPin): number {
         let rs = mqRs(pin)
         if (_mqR0[sensor] <= 0) {
@@ -117,6 +121,7 @@ namespace Sensors03 {
     //% block="MQ read raw ADC pin %pin"
     //% group="가스(MQ 계열)" weight=104
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function mqReadRaw(pin: AnalogPin): number {
         // 원시 ADC 는 센서 종류와 무관하므로 sensor 인자를 두지 않는다
         return pins.analogReadPin(pin)
@@ -126,12 +131,14 @@ namespace Sensors03 {
 
     //% block="MQ-2 gas concentration read pin %pin"
     //% group="가스(MQ-2)" weight=105
+    //% blockHidden=true
     export function mq2Read(pin: AnalogPin): number {
         return mqReadPPM(MQSensor.MQ2, pin)
     }
 
     //% block="MQ-135 air quality read pin %pin"
     //% group="가스(MQ-135)" weight=100
+    //% blockHidden=true
     export function mq135Read(pin: AnalogPin): number {
         return mqReadPPM(MQSensor.MQ135, pin)
     }
@@ -311,6 +318,7 @@ namespace Sensors03 {
     //% c1.defl=DigitalPin.P12 c2.defl=DigitalPin.P13 c3.defl=DigitalPin.P14 c4.defl=DigitalPin.P15
     //% group="Keypad" weight=75
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function keypadInit(kpType: KeypadType, r1: DigitalPin, r2: DigitalPin, r3: DigitalPin, r4: DigitalPin, c1: DigitalPin, c2: DigitalPin, c3: DigitalPin, c4: DigitalPin): void {
         _kpType = kpType
         _kpRows = [r1, r2, r3, r4]
@@ -342,6 +350,7 @@ namespace Sensors03 {
 
     //% block="keypad key read"
     //% group="Keypad" weight=74
+    //% blockHidden=true
     export function keypadRead(): string {
         let numCols = _kpType == KeypadType.Keypad4x4 ? 4 : 3
         let keys = _kpType == KeypadType.Keypad4x4 ? KEYPAD_4X4 : KEYPAD_4X3
@@ -385,12 +394,14 @@ namespace Sensors03 {
 
     //% block="keypad key pressed?"
     //% group="Keypad" weight=73
+    //% blockHidden=true
     export function keypadPressed(): boolean {
         return keypadRead() != ""
     }
 
     //% block="keypad last key"
     //% group="Keypad" weight=72
+    //% blockHidden=true
     export function keypadLastKey(): string {
         return _kpLastKey
     }
@@ -398,6 +409,7 @@ namespace Sensors03 {
     //% block="keypad key %key ?"
     //% key.defl="1"
     //% group="Keypad" weight=71
+    //% blockHidden=true
     export function keypadIs(key: string): boolean {
         let pressed = keypadRead()
         return pressed == key
@@ -405,6 +417,7 @@ namespace Sensors03 {
 
     //% block="keypad number key pressed? (0-9)"
     //% group="Keypad" weight=70
+    //% blockHidden=true
     export function keypadIsNumber(): boolean {
         let key = keypadRead()
         return key >= "0" && key <= "9"
@@ -412,6 +425,7 @@ namespace Sensors03 {
 
     //% block="keypad pressed key number to"
     //% group="Keypad" weight=69
+    //% blockHidden=true
     export function keypadNumber(): number {
         let key = _kpLastKey
         if (key >= "0" && key <= "9") {

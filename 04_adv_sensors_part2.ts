@@ -396,6 +396,7 @@ namespace AdvSensors {
 
     //% block="Gesture sensor(APDS9960) setup"
     //% group="제스처(APDS9960)" weight=125
+    //% blockHidden=true
     export function apds9960Setup(): void {
         _apds9960Addr = 0x39
 
@@ -483,6 +484,7 @@ namespace AdvSensors {
 
     //% block="APDS9960 clear interrupt"
     //% group="제스처(APDS9960)" weight=115
+    //% blockHidden=true
     export function apds9960ClearInterrupt(): void {
         // ★ 예전에는 AIEN/PIEN 으로 인터럽트를 켤 수는 있어도 지우는 경로가
         //   드라이버 어디에도 없었다(0xE4~0xE7 이 파일 전체에 등장하지 않았다).
@@ -497,6 +499,7 @@ namespace AdvSensors {
     //% interrupt.defl=AdvSensors.APDS9960Interrupt.Disable
     //% group="제스처(APDS9960)" weight=124
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function apds9960EnableSensor(sensor: APDS9960SensorType, enable: APDS9960Enable, interrupt: APDS9960Interrupt): void {
         // Enable 레지스터 읽기 (레지스터 지정 후 반복시작 필요)
         pins.i2cWriteNumber(_apds9960Addr, 0x80, NumberFormat.UInt8BE, true)
@@ -572,6 +575,7 @@ namespace AdvSensors {
     //% block="APDS9960 %atype light"
     //% atype.defl=AdvSensors.APDS9960AmbientType.Ambient
     //% group="제스처(APDS9960)" weight=123
+    //% blockHidden=true
     export function apds9960ReadAmbient(atype: APDS9960AmbientType): number {
         // ★ STATUS(0x93) 의 AVALID(bit0) 로 적분 완료 확인 — 예전에는 확인 없이 읽었다.
         //   파일 전체에 0x93 이 한 번도 등장하지 않았다.
@@ -609,6 +613,7 @@ namespace AdvSensors {
 
     //% block="APDS9960 proximity sensor value"
     //% group="제스처(APDS9960)" weight=122
+    //% blockHidden=true
     export function apds9960GetProximity(): number {
         // ★ STATUS(0x93) 의 PVALID(bit1) 로 근접 변환 완료를 확인한다
         let wait = 20
@@ -626,6 +631,7 @@ namespace AdvSensors {
 
     //% block="APDS9960 gesture detected"
     //% group="제스처(APDS9960)" weight=121
+    //% blockHidden=true
     export function apds9960GestureAvailable(): boolean {
         // 제스처 상태 확인 (레지스터 지정 후 반복시작 필요 — 예전에는 STOP 이 끼어 있었다)
         pins.i2cWriteNumber(_apds9960Addr, 0xAF, NumberFormat.UInt8BE, true)
@@ -637,6 +643,7 @@ namespace AdvSensors {
     //% block="APDS9960 gesture read %gesture"
     //% gesture.defl=AdvSensors.APDS9960GestureKR.Left
     //% group="제스처(APDS9960)" weight=120
+    //% blockHidden=true
     export function apds9960GetGesture(gesture: APDS9960GestureKR): boolean {
         // Both reporter styles share the same 400ms cache and expiry time.
         let g = apds9960ReadGesture()
@@ -650,6 +657,7 @@ namespace AdvSensors {
 
     //% block="APDS9960 init"
     //% group="제스처(APDS9960)" weight=119
+    //% blockHidden=true
     export function apds9960Init(): void {
         gestureCachedAt = -1000
         _apds9960GestureLatchMs = -1000
@@ -672,6 +680,7 @@ namespace AdvSensors {
      */
     //% block="APDS9960 gesture read"
     //% group="제스처(APDS9960)" weight=118
+    //% blockHidden=true
     export function apds9960ReadGesture(): APDS9960Gesture {
         let value = apds9960ReadGestureRaw()
         if (value != APDS9960Gesture.None) { gestureCached = value; gestureCachedAt = control.millis() }
@@ -749,6 +758,7 @@ namespace AdvSensors {
 
     //% block="APDS9960 proximity read"
     //% group="제스처(APDS9960)" weight=117
+    //% blockHidden=true
     export function apds9960ReadProximity(): number {
         pins.i2cWriteNumber(_apds9960Addr, 0x9C, NumberFormat.UInt8BE)
         return pins.i2cReadNumber(_apds9960Addr, NumberFormat.UInt8BE)
@@ -756,6 +766,7 @@ namespace AdvSensors {
 
     //% block="APDS9960 color read %color"
     //% group="제스처(APDS9960)" weight=116
+    //% blockHidden=true
     export function apds9960ReadColor(color: RGBColor): number {
         // RGBC 데이터 읽기
         pins.i2cWriteNumber(_apds9960Addr, 0x94, NumberFormat.UInt8BE)
@@ -821,6 +832,7 @@ namespace AdvSensors {
 
     //% block="Heart rate sensor setup"
     //% group="심박(MAX30102)" weight=110
+    //% blockHidden=true
     export function heartRateSetup(): void {
         _hrLastSampleMs = 0
         _hrFingerDetected = false
@@ -876,6 +888,7 @@ namespace AdvSensors {
 
     //% block="Finger detected"
     //% group="심박(MAX30102)" weight=109
+    //% blockHidden=true
     export function heartRateFingerDetected(): boolean {
         // ★ 이 블록은 'forever' 안에서 BPM/SpO2 블록을 감싸는 데 거의 항상 쓰인다.
         //   그런데 FIFO 는 꺼내면 사라지는 공유 자원이라, 샘플러가 도는 동안 여기서
@@ -1005,6 +1018,7 @@ namespace AdvSensors {
 
     //% block="Heart rate read (BPM)"
     //% group="심박(MAX30102)" weight=108
+    //% blockHidden=true
     export function heartRateGetBPM(): number {
         hrEnsureSampler()
         if (!hrFresh() || !_hrFingerDetected) return 0
@@ -1026,6 +1040,7 @@ namespace AdvSensors {
 
     //% block="SpO2 read (\\%)"
     //% group="심박(MAX30102)" weight=107
+    //% blockHidden=true
     export function heartRateGetSpO2(): number {
         hrEnsureSampler()          // BPM 블록 없이 SpO2 만 써도 표본이 쌓이도록
         // ★ 방어용 가드. RED 1채널 모드(_hrMode == 2)에서는 heartRateReadRaw 가
@@ -1062,6 +1077,7 @@ namespace AdvSensors {
 
     //% block="Heartbeat detected"
     //% group="심박(MAX30102)" weight=106
+    //% blockHidden=true
     export function heartRateBeatDetected(): boolean {
         // ★ 예전에는 여기서 heartRateReadRaw() 를 불러 FIFO 를 소비하면서도
         //   _hrBeatDetected 를 갱신하는 코드가 어디에도 없어 항상 같은 값만 나왔다.

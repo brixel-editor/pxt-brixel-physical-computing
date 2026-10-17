@@ -6,6 +6,7 @@ namespace AdvSensors {
      */
     //% block="I2C Weight Sensor is available"
     //% group="I2C 무게센서" weight=56
+    //% blockHidden=true
     export function i2cWeightIsAvailable(): boolean {
         i2cWeightRaw()
         return !_i2cWeightBad
@@ -18,6 +19,7 @@ namespace AdvSensors {
     //% block="I2C Weight Sensor read raw byte $byteType"
     //% byteType.defl=AdvSensors.I2CWeightByte.DataHigh
     //% group="I2C 무게센서" weight=55
+    //% blockHidden=true
     export function i2cWeightReadByte(byteType: I2CWeightByte): number {
         let b = pins.i2cReadBuffer(_i2cWeightAddr, 3)
         let i = byteType
@@ -32,6 +34,7 @@ namespace AdvSensors {
     //% block="I2C Weight Sensor tare samples $samples"
     //% samples.defl=10 samples.min=1 samples.max=50
     //% group="I2C 무게센서" weight=54
+    //% blockHidden=true
     export function i2cWeightTare(samples: number): void {
         let n = Math.clamp(1, 50, Math.floor(samples))
         let sum = 0
@@ -55,6 +58,7 @@ namespace AdvSensors {
     //% block="I2C Weight Sensor set scale $scale"
     //% scale.defl=1
     //% group="I2C 무게센서" weight=53
+    //% blockHidden=true
     export function i2cWeightSetScale(scale: number): void {
         // 0 을 넣으면 read 에서 0 나눗셈이 되므로 막는다
         _i2cWeightScale = scale == 0 ? 1 : scale
@@ -65,6 +69,7 @@ namespace AdvSensors {
      */
     //% block="I2C weight sensor timed out?"
     //% group="I2C 무게센서" weight=52
+    //% blockHidden=true
     export function i2cWeightTimedOut(): boolean {
         return _i2cWeightBad
     }

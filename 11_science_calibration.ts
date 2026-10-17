@@ -4,6 +4,7 @@ namespace Sensors03 {
     let currentCountsPerAmp: number[] = []
     /** a-032 WCS2801: power from 3.3V. Disconnect measured current before zeroing, then calibrate a known current again. A new zero clears the old sensitivity. Lost on restart. */
     //%  block="zero current sensor pin $pin" group="전류 센서(WCS2801)" pin.defl=AnalogPin.P1
+    //% blockHidden=true
     export function zeroCurrent(pin: AnalogPin): void {
         let index = currentPins.indexOf(pin)
         if (index < 0) { index = currentPins.length; currentPins.push(pin); currentZeros.push(-1); currentCountsPerAmp.push(0) }
@@ -14,6 +15,7 @@ namespace Sensors03 {
     /** After zeroing, apply a known DC current measured by a reference meter. Sensitivity varies with supply voltage and module. */
     //%  block="current pin $pin calibrate reference $amps A" group="전류 센서(WCS2801)"
     //% pin.defl=AnalogPin.P1 amps.defl=0.5
+    //% blockHidden=true
     export function calibrateCurrent(pin: AnalogPin, amps: number): void {
         let index = currentPins.indexOf(pin)
         if (index < 0) return
@@ -25,6 +27,7 @@ namespace Sensors03 {
     }
     /** WCS2801 1A module, 3.3V supply. Zero and calibrate with a known current first. Failure/outside ±1A=-9999. */
     //%  block="current sensor pin $pin (A)" group="전류 센서(WCS2801)" pin.defl=AnalogPin.P1
+    //% blockHidden=true
     export function currentAmps(pin: AnalogPin): number {
         let index = currentPins.indexOf(pin)
         if (index < 0 || currentCountsPerAmp[index] == 0) return -9999
@@ -74,11 +77,13 @@ namespace Sensors03 {
     /** A_013/A_014 turbidity module signal to the selected micro:bit analog pin. Raw 0..1023, no calibration needed; not NTU. Signal must stay within 0..3.3V and board supply. Invalid pin=-1; disconnection cannot be reliably detected. */
     //%  block="turbidity sensor pin $pin raw value" group="탁도(Turbidity)" weight=90
     //% pin.defl=AnalogPin.P1
+    //% blockHidden=true
     export function turbidityRaw(pin: AnalogPin): number { return BrixelInternal.analog(pin) }
 
     /** Put the probe in clear water, shield ambient light and capture the selected analog input. Raw 5..1022 required. Invalid recalibration clears the old reference on that pin. Calibration resets on program restart. */
     //%  block="turbidity sensor pin $pin calibrate clear water" group="탁도(Turbidity)" weight=70
     //% pin.defl=AnalogPin.P1
+    //% blockHidden=true
     export function calibrateTurbidity(pin: AnalogPin): void {
         let index = turbidityPins.indexOf(pin)
         if (index >= 0) clearWaterCounts[index] = 0
@@ -91,6 +96,7 @@ namespace Sensors03 {
     /** Relative transmission from the analog signal: clear water=100%, lower means cloudier. Not NTU. Raw zero is valid 0%. Missing calibration, invalid pin, ADC saturation or over 120%=-1. */
     //%  block="turbidity sensor pin $pin transmission (percent)" group="탁도(Turbidity)" weight=80
     //% pin.defl=AnalogPin.P1
+    //% blockHidden=true
     export function turbidityTransmission(pin: AnalogPin): number {
         let index = turbidityPins.indexOf(pin)
         if (index < 0 || clearWaterCounts[index] <= 0) return -1
@@ -107,6 +113,7 @@ namespace Sensors03 {
     /** A_016/017/018 Sharp-style analog dust kit: VO to a protected ADC pin, LED control to a digital pin. Needs 5V sensor power, VO voltage scaling and a voltage-compatible LED driver. Mean of 8 pulses, raw 0..1023, not PM2.5 or ug/m3. Timing/ADC streaming conflict=-1. */
     //%  block="analog dust sensor signal $signal LED $lamp raw value" group="미세먼지(GP2Y1014AU0F)"
     //% signal.defl=AnalogPin.P1 lamp.defl=DigitalPin.P8
+    //% blockHidden=true
     export function analogDustRaw(signal: AnalogPin, lamp: DigitalPin): number {
         if (!BrixelInternal.validDigital(lamp) || <number>signal == <number>lamp ||
             (signal != AnalogPin.P0 && signal != AnalogPin.P1 && signal != AnalogPin.P2 &&

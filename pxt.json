@@ -1,12 +1,10 @@
 {
   "name": "brixel-physical-computing",
-  "version": "0.2.0",
-  "description": "BRIXEL physical computing: 476 blocks for sensors, displays, motors, outputs and communications",
+  "version": "0.3.0",
+  "description": "BRIXEL physical computing (USB/wired): sensors safe on the micro:bit Shield V2, displays, motors, outputs and serial/WiFi communications",
   "license": "MIT",
   "dependencies": {
-    "core": "*",
-    "bluetooth": "*",
-    "microphone": "*"
+    "core": "*"
   },
   "files": [
     "main.ts",
@@ -25,7 +23,6 @@
     "07_communications.ts",
     "08_wifi.ts",
     "09_usb_serial.ts",
-    "10_bluetooth.ts",
     "_locales/en/brixel-physical-computing-strings.json",
     "_locales/ko/brixel-physical-computing-strings.json",
     "_locales/ko/brixel-physical-computing-jsdoc-strings.json",
@@ -110,25 +107,6 @@
   "preferredEditor": "blocksprj",
   "author": "BRIXEL",
   "icon": "./icon.png",
-  "yotta": {
-    "configIsJustDefaults": true,
-    "config": {
-      "microbit-dal": {
-        "bluetooth": {
-          "enabled": 1,
-          "pairing_mode": 0,
-          "private_addressing": 0,
-          "open": 1,
-          "whitelist": 0,
-          "advertising_timeout": 0,
-          "tx_power": 6,
-          "dfu_service": 0,
-          "event_service": 1,
-          "device_info_service": 1
-        }
-      }
-    }
-  },
   "disablesVariants": [
     "mbdal"
   ]

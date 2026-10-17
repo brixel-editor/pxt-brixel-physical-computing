@@ -591,6 +591,7 @@ namespace Sensors03 {
     //% gain.defl=Sensors03.HX711Gain.Gain128
     //% group="무게(HX711)" weight=205
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function hx711Init(dout: DigitalPin, clk: DigitalPin, gain: HX711Gain): void {
         _hx711Dout = dout
         _hx711Clk = clk
@@ -611,6 +612,7 @@ namespace Sensors03 {
 
     //% block="HX711 weight sensor read weight"
     //% group="무게(HX711)" weight=204
+    //% blockHidden=true
     export function hx711ReadWeight(): number {
         let raw = hx711ReadRaw()
         return (raw - _hx711Offset) / _hx711Scale
@@ -619,6 +621,7 @@ namespace Sensors03 {
     //% block="HX711 weight sensor tare %times times"
     //% times.defl=10 times.min=1 times.max=50
     //% group="무게(HX711)" weight=203
+    //% blockHidden=true
     export function hx711Tare(times: number): void {
         let sum = 0
         let n = 0
@@ -634,6 +637,7 @@ namespace Sensors03 {
     //% block="HX711 weight sensor set scale %scale"
     //% scale.defl=1
     //% group="무게(HX711)" weight=202
+    //% blockHidden=true
     export function hx711SetScale(scale: number): void {
         if (scale != 0) {
             _hx711Scale = scale
@@ -642,6 +646,7 @@ namespace Sensors03 {
 
     //% block="HX711 weight sensor is ready"
     //% group="무게(HX711)" weight=201
+    //% blockHidden=true
     export function hx711IsReady(): boolean {
         return pins.digitalReadPin(_hx711Dout) == 0
     }
@@ -649,6 +654,7 @@ namespace Sensors03 {
     //% block="HX711 weight sensor power %state"
     //% state.shadow="toggleOnOff"
     //% group="무게(HX711)" weight=200
+    //% blockHidden=true
     export function hx711Power(state: boolean): void {
         if (state) {
             // 전원 켜기
@@ -667,6 +673,7 @@ namespace Sensors03 {
     //% block="HX711 weight sensor read %dtype"
     //% dtype.defl=Sensors03.HX711DataType.Weight
     //% group="무게(HX711)" weight=199
+    //% blockHidden=true
     export function hx711Read(dtype: HX711DataType): number {
         if (dtype == HX711DataType.Raw) {
             return hx711ReadRaw()
@@ -785,6 +792,7 @@ namespace Sensors03 {
     //% baud.defl=9600
     //% group="미세먼지(PMS)" weight=185
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function pmsInit(rx: SerialPin, tx: SerialPin, baud: number): void {
         _pmsRx = rx
         _pmsTx = tx
@@ -804,6 +812,7 @@ namespace Sensors03 {
     //% block="PMS PM sensor power %power"
     //% power.defl=Sensors03.PMSPower.Wakeup
     //% group="미세먼지(PMS)" weight=184
+    //% blockHidden=true
     export function pmsPower(power: PMSPower): void {
         USBSerial.uartClaim(USBSerial.UartOwner.PMS)
         if (power == PMSPower.Sleep) {
@@ -835,6 +844,7 @@ namespace Sensors03 {
     //% block="PMS PM sensor mode %mode"
     //% mode.defl=Sensors03.PMSMode.Active
     //% group="미세먼지(PMS)" weight=183
+    //% blockHidden=true
     export function pmsSetMode(mode: PMSMode): void {
         USBSerial.uartClaim(USBSerial.UartOwner.PMS)
         _pmsMode = mode
@@ -866,6 +876,7 @@ namespace Sensors03 {
     //% block="PMS PM sensor read %dtype"
     //% dtype.defl=Sensors03.PMSDataType.PM2_5_STD
     //% group="미세먼지(PMS)" weight=182
+    //% blockHidden=true
     export function pmsRead(dtype: PMSDataType): number {
         // 아두이노 PMS::readUntil() 은 체크섬까지 맞는 완전한 프레임이 올 때까지 최대
         // SINGLE_RESPONSE_TIME(1000ms) 기다리고, 생성기(getPmsData)는 실패하면 -1 을 돌려준다
@@ -883,6 +894,7 @@ namespace Sensors03 {
 
     //% block="PMS PM sensor request read"
     //% group="미세먼지(PMS)" weight=181
+    //% blockHidden=true
     export function pmsRequestRead(): void {
         // PMS.cpp:42 — requestRead() 는 패시브 모드일 때만 프레임을 보낸다.
         if (_pmsMode != PMSMode.Passive) return
@@ -901,6 +913,7 @@ namespace Sensors03 {
 
     //% block="PMS PM sensor data ready"
     //% group="미세먼지(PMS)" weight=180
+    //% blockHidden=true
     export function pmsDataReady(): boolean {
         pmsParseData()
         return _pmsReady
@@ -1184,6 +1197,7 @@ namespace Sensors03 {
     //% baud.defl=9600
     //% group="CO2센서(MHZ19)" weight=175
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function mhz19Init(rx: SerialPin, tx: SerialPin, baud: number): void {
         _mhz19Rx = rx
         _mhz19Tx = tx
@@ -1199,6 +1213,7 @@ namespace Sensors03 {
     //% block="MHZ19 set range: %range ppm"
     //% range.defl=Sensors03.MHZ19Range.Range2000
     //% group="CO2센서(MHZ19)" weight=174
+    //% blockHidden=true
     export function mhz19SetRange(range: MHZ19Range): void {
         if (range != MHZ19Range.Range2000 && range != MHZ19Range.Range5000 && range != MHZ19Range.Range10000) return
         USBSerial.uartClaim(USBSerial.UartOwner.MHZ19)
@@ -1223,6 +1238,7 @@ namespace Sensors03 {
     //% block="MHZ19 read: %dtype"
     //% dtype.defl=Sensors03.MHZ19DataType.CO2
     //% group="CO2센서(MHZ19)" weight=172
+    //% blockHidden=true
     export function mhz19Read(dtype: MHZ19DataType): number {
         // Invalidate previous results before each request (Science Lab failure policy).
         _mhz19CO2 = -1
@@ -1302,6 +1318,7 @@ namespace Sensors03 {
     //% autoCal.defl=Sensors03.MHZ19AutoCal.On
     //% group="CO2센서(MHZ19)" weight=171
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function mhz19SetAutoCal(autoCal: MHZ19AutoCal): void {
         USBSerial.uartClaim(USBSerial.UartOwner.MHZ19)
         if (!USBSerial.uartIsOwner(USBSerial.UartOwner.MHZ19)) return

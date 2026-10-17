@@ -21,6 +21,7 @@ namespace Sensors03 {
     export function water(pin: AnalogPin): number { return BrixelInternal.analog(pin) }
     /** 2025 orders Sheet1 E26: connect a 3.3V module to G/V/S of the selected pin. Raw 0..1023; not a calibrated physical unit. P3/P4/P10 turn off the LED display. */
     //%  block="rain sensor $pin raw value" group="아날로그 입력" pin.defl=AnalogPin.P1
+    //% blockHidden=true
     export function rain(pin: AnalogPin): number { return BrixelInternal.analog(pin) }
 }
 
@@ -39,6 +40,7 @@ namespace Sensors03 {
     export function rotation(pin: AnalogPin): number { return BrixelInternal.analog(pin) }
     /** a-026: connect a 3.3V module to G/V/S of the selected pin. Raw 0..1023; not a calibrated physical unit. P3/P4/P10 turn off the LED display. */
     //%  block="continuous rotation sensor $pin raw value" group="아날로그 입력" pin.defl=AnalogPin.P1
+    //% blockHidden=true
     export function infiniteRotation(pin: AnalogPin): number { return BrixelInternal.analog(pin) }
     /** a-027: connect a 3.3V module to G/V/S of the selected pin. Raw 0..1023; not a calibrated physical unit. P3/P4/P10 turn off the LED display. */
     //%  block="slider sensor $pin raw value" group="아날로그 입력" pin.defl=AnalogPin.P1
@@ -78,6 +80,7 @@ namespace Sensors03 {
     export function waterLevel(pin: DigitalPin): number { return BrixelInternal.digital(pin) }
     /** d-012: connect G/V/S to the selected digital pin. Returns the electrical signal 0 or 1. Module polarity varies. */
     //%  block="photointerrupter $pin signal" group="디지털 입력" pin.defl=DigitalPin.P8
+    //% blockHidden=true
     export function photoGate(pin: DigitalPin): number { return BrixelInternal.digital(pin) }
     /** d-027: connect G/V/S to the selected digital pin. Returns the electrical signal 0 or 1. Module polarity varies. */
     //%  block="flame sensor $pin signal" group="디지털 입력" pin.defl=DigitalPin.P8

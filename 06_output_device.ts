@@ -615,6 +615,7 @@ namespace OutputDevice {
     //% block="EEPROM set I2C address %addr"
     //% addr.defl=0x50
     //% group="EEPROM" weight=56
+    //% blockHidden=true
     export function eepromInit(addr: number): void {
         _eepromAddr = addr
     }
@@ -623,6 +624,7 @@ namespace OutputDevice {
     //% memAddr.defl=0 memAddr.min=0 memAddr.max=32767
     //% value.defl=0 value.min=0 value.max=255
     //% group="EEPROM" weight=55
+    //% blockHidden=true
     export function eepromWrite(memAddr: number, value: number): void {
         let buf = pins.createBuffer(3)
         buf[0] = (memAddr >> 8) & 0xFF  // 주소 상위 바이트
@@ -637,6 +639,7 @@ namespace OutputDevice {
     //% block="EEPROM read address %memAddr"
     //% memAddr.defl=0 memAddr.min=0 memAddr.max=32767
     //% group="EEPROM" weight=54
+    //% blockHidden=true
     export function eepromRead(memAddr: number): number {
         let addrBuf = pins.createBuffer(2)
         addrBuf[0] = (memAddr >> 8) & 0xFF
@@ -651,6 +654,7 @@ namespace OutputDevice {
     //% memAddr.defl=0
     //% text.defl="Hello"
     //% group="EEPROM" weight=53
+    //% blockHidden=true
     export function eepromWriteString(memAddr: number, text: string): void {
         // ★ 길이와 문자를 8비트로 저장하는 형식이라 한계가 있다.
         //   예전에는 초과분이 조용히 잘려 문자열이 깨진 채 저장됐다.
@@ -668,6 +672,7 @@ namespace OutputDevice {
     //% block="EEPROM string read address %memAddr"
     //% memAddr.defl=0
     //% group="EEPROM" weight=52
+    //% blockHidden=true
     export function eepromReadString(memAddr: number): string {
         // 길이 읽기
         // ★ 예전에는 여기서 100 으로 잘랐다. 쓰기 쪽(eepromWriteString)은 255 자까지
@@ -688,6 +693,7 @@ namespace OutputDevice {
     //% memAddr.defl=0
     //% value.defl=0
     //% group="EEPROM" weight=51
+    //% blockHidden=true
     export function eepromWriteNumber(memAddr: number, value: number): void {
         // 32비트 정수로 저장
         eepromWrite(memAddr, (value >> 24) & 0xFF)
@@ -699,6 +705,7 @@ namespace OutputDevice {
     //% block="EEPROM number read (4byte) address %memAddr"
     //% memAddr.defl=0
     //% group="EEPROM" weight=50
+    //% blockHidden=true
     export function eepromReadNumber(memAddr: number): number {
         let b0 = eepromRead(memAddr)
         let b1 = eepromRead(memAddr + 1)

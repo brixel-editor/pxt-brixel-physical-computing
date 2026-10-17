@@ -4,6 +4,7 @@ namespace Sensors03 {
     //% block="MHZ19 status read: %status"
     //% status.defl=Sensors03.MHZ19Status.Range
     //% group="CO2센서(MHZ19)" weight=170
+    //% blockHidden=true
     export function mhz19GetStatus(status: MHZ19Status): number {
         // 아두이노 getRange()/getABC() 는 매번 센서에 직접 물어본다:
         //   getRange : 명령 155(0x9B) → 응답 바이트4·5 (MHZ19.cpp:229-240)
@@ -420,6 +421,7 @@ namespace Sensors03 {
     //% baudRate.defl=57600
     //% group="지문센서" weight=185
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function fingerprintInit(rx: SerialPin, tx: SerialPin, baudRate: number): void {
         _fpRxPin = rx
         _fpTxPin = tx
@@ -459,6 +461,7 @@ namespace Sensors03 {
     //% step.defl=Sensors03.FingerprintEnrollStep.GetImage
     //% id.min=1 id.max=127 id.defl=1
     //% group="지문센서" weight=184
+    //% blockHidden=true
     export function fingerprintEnroll(step: FingerprintEnrollStep, id: number): boolean {
         let cmd: number[] = []
 
@@ -493,6 +496,7 @@ namespace Sensors03 {
     //% block="Fingerprint search mode: $mode"
     //% mode.defl=Sensors03.FingerprintSearchMode.Fast
     //% group="지문센서" weight=183
+    //% blockHidden=true
     export function fingerprintSearch(mode: FingerprintSearchMode): boolean {
         // 1. 이미지 가져오기
         _fpStatusCode = fpSendCommand([0x01])
@@ -542,6 +546,7 @@ namespace Sensors03 {
     //% block="Fingerprint result: $resultType"
     //% resultType.defl=Sensors03.FingerprintResult.FingerID
     //% group="지문센서" weight=182
+    //% blockHidden=true
     export function fingerprintGetResult(resultType: FingerprintResult): number {
         switch (resultType) {
             case FingerprintResult.FingerID:
@@ -565,6 +570,7 @@ namespace Sensors03 {
     //% action.defl=Sensors03.FingerprintDBAction.Delete
     //% id.min=1 id.max=127 id.defl=1
     //% group="지문센서" weight=181
+    //% blockHidden=true
     export function fingerprintDatabase(action: FingerprintDBAction, id: number): number {
         let cmd: number[] = []
 
@@ -600,6 +606,7 @@ namespace Sensors03 {
     //% block="Fingerprint Sensor LED $state"
     //% state.defl=Sensors03.FingerprintLED.On
     //% group="지문센서" weight=180
+    //% blockHidden=true
     export function fingerprintLED(state: FingerprintLED): void {
         // ★ 아두이노 fingerprint_led_control 의 ON/OFF 는 finger.LEDcontrol(true/false) 이고,
         //   그것은 전용 1바이트 명령 LEDON(0x50) / LEDOFF(0x51) 을 보낸다
@@ -840,6 +847,7 @@ namespace Sensors03 {
     //% block="Turbidity sensor setup: analog pin %pin"
     //% pin.defl=AnalogPin.P0
     //% group="탁도(Turbidity)" weight=145
+    //% blockHidden=true
     export function turbidityInit(pin: AnalogPin): void {
         _turbidityPin = pin
         _turbidityRefVoltage = 3.3
@@ -848,6 +856,7 @@ namespace Sensors03 {
 
     //% block="Turbidity sensor calibrate (clear water)"
     //% group="탁도(Turbidity)" weight=144
+    //% blockHidden=true
     export function turbidityCalibrate(): void {
         // 맑은 물에서 전압 측정하여 보정값 저장.
         // 아두이노 turbidity_calibrate 는 20ms 간격으로 50회 평균한다(11_sensors_a.js:877-881).
@@ -889,6 +898,7 @@ namespace Sensors03 {
     //% block="Turbidity sensor read: %dtype"
     //% dtype.defl=Sensors03.TurbidityDataType.NTU
     //% group="탁도(Turbidity)" weight=142
+    //% blockHidden=true
     export function turbidityRead(dtype: TurbidityDataType): number {
         // 아날로그 값 읽기 (여러 번 읽어서 절사평균 — turbidityTrimmedMean 주석 참조)
         let samples: number[] = []
@@ -1012,6 +1022,7 @@ namespace Sensors03 {
 
     //% block="LM35 read temperature pin %pin unit %unit"
     //% group="온도(LM35)" weight=125
+    //% blockHidden=true
     export function lm35Read(pin: AnalogPin, unit: TempUnit): number {
         // 0.48828125 = (5000mV / 1024) / 10mV 로 아두이노(5V 기준) 상수였다.
         // micro:bit ADC 는 3.3V 기준 0~1023 이라 모든 값이 1.515배 높게 나왔다.
@@ -1030,6 +1041,7 @@ namespace Sensors03 {
 
     //% block="GP2Y0A21YK read distance pin %pin unit %unit"
     //% group="거리센서(GP2Y0A21YK)" weight=120
+    //% blockHidden=true
     export function gp2y0a21ykRead(pin: AnalogPin, unit: DistanceUnit): number {
         // 예전 식 12343.85/(v-0.42) 은 5V/10bit 용 상수 12343.85 를 지수 -1.15 의 멱함수가 아니라
         // 단순 역수에 쓴 것이라 거리가 1.7~3배 크게 나왔고, 센서 전원이 없으면 v=0 → -29390cm 가 나왔다.
@@ -1060,6 +1072,7 @@ namespace Sensors03 {
     //% block="US-100 set trigger pin %trig echo pin %echo"
     //% trig.defl=DigitalPin.P1 echo.defl=DigitalPin.P2
     //% group="초음파(US-100)" weight=115
+    //% blockHidden=true
     export function us100SetPins(trig: DigitalPin, echo: DigitalPin): void {
         _us100Trig = trig
         _us100Echo = echo
@@ -1067,6 +1080,7 @@ namespace Sensors03 {
 
     //% block="US-100 distance measure unit %unit"
     //% group="초음파(US-100)" weight=114
+    //% blockHidden=true
     export function us100Read(unit: DistanceUnit): number {
         pins.digitalWritePin(_us100Trig, 0)
         control.waitMicros(2)
@@ -1126,6 +1140,7 @@ namespace Sensors03 {
     //% pin.defl=AnalogPin.P0
     //% group="고온센서(High Temp)" weight=199
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function hiTempInit(pin: AnalogPin, mode: HiTempMode): void {
         _hiTempPin = pin
         _hiTempMode = mode
@@ -1136,6 +1151,7 @@ namespace Sensors03 {
     //% refTemp.defl=25
     //% group="고온센서(High Temp)" weight=198
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function hiTempCalibrate(point: number, refTemp: number): number {
         // 노이즈 억제를 위해 여러 번 평균
         let sum = 0
@@ -1152,6 +1168,7 @@ namespace Sensors03 {
     //% block="High temp set calibration: ADC %adc1 = %t1 °C, ADC %adc2 = %t2 °C"
     //% group="고온센서(High Temp)" weight=197
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function hiTempSetCalibration(adc1: number, t1: number, adc2: number, t2: number): void {
         _hiTempA1 = adc1; _hiTempT1 = t1
         _hiTempA2 = adc2; _hiTempT2 = t2
@@ -1159,6 +1176,7 @@ namespace Sensors03 {
 
     //% block="High temp calibrated?"
     //% group="고온센서(High Temp)" weight=196
+    //% blockHidden=true
     export function hiTempCalibrated(): boolean {
         if (_hiTempMode == HiTempMode.NTC) return true
         return _hiTempA1 >= 0 && _hiTempA2 >= 0 && _hiTempA1 != _hiTempA2
@@ -1168,6 +1186,7 @@ namespace Sensors03 {
     //% nominalR.defl=10000 beta.defl=3950 seriesR.defl=10000
     //% group="고온센서(High Temp)" weight=195
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function hiTempSetNTC(nominalR: number, beta: number, seriesR: number): void {
         _hiTempNominal = nominalR
         _hiTempBeta = beta
@@ -1177,6 +1196,7 @@ namespace Sensors03 {
     //% block="High temp read temperature (%unit)"
     //% unit.defl=AdvSensors.TempUnit.Celsius
     //% group="고온센서(High Temp)" weight=194
+    //% blockHidden=true
     export function hiTempRead(unit: TempUnit): number {
         let adc = pins.analogReadPin(_hiTempPin)
         let c = 0
@@ -1200,6 +1220,7 @@ namespace Sensors03 {
 
     //% block="High temp read raw ADC"
     //% group="고온센서(High Temp)" weight=193
+    //% blockHidden=true
     export function hiTempReadRaw(): number {
         return pins.analogReadPin(_hiTempPin)
     }

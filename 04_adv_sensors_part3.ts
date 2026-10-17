@@ -3,6 +3,7 @@ namespace AdvSensors {
 
     //% block="Sensor ready"
     //% group="심박(MAX30102)" weight=105
+    //% blockHidden=true
     export function heartRateIsReady(): boolean {
         // ★ 이 블록은 센서를 건드리지 않아서, 이걸로 읽기 블록을 감싸면 샘플러가 영원히
         //   기동되지 않고 _hrFingerDetected 가 false 로 굳는 자기잠금 상태가 됐다.
@@ -16,6 +17,7 @@ namespace AdvSensors {
 
     //% block="Sensor temperature (°C)"
     //% group="심박(MAX30102)" weight=104
+    //% blockHidden=true
     export function heartRateGetTemperature(): number {
         // 온도 측정 트리거
         pins.i2cWriteNumber(_hrAddr, 0x2101, NumberFormat.UInt16BE)
@@ -42,6 +44,7 @@ namespace AdvSensors {
     //% power.defl=AdvSensors.HeartRatePower.Medium
     //% group="심박(MAX30102)" weight=103
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function heartRateSetPower(stype: HeartRateSensorType, power: HeartRatePower): void {
         // ★ 전력 3단계는 아두이노 생성기(12_sensors_b.js 의 max30105_setup_advanced)와 같은 값을 쓴다.
         //   LOW 0x02 = 0.4mA, MEDIUM 0x1F = 6.4mA, HIGH 0x7F = 25.4mA
@@ -95,6 +98,7 @@ namespace AdvSensors {
 
     //% block="Red LED raw value read"
     //% group="심박(MAX30102)" weight=102
+    //% blockHidden=true
     export function heartRateGetRedRaw(): number {
         if (!hrSafeCheck()) return 0
         return _hrRedLED
@@ -102,6 +106,7 @@ namespace AdvSensors {
 
     //% block="IR LED raw value read"
     //% group="심박(MAX30102)" weight=101
+    //% blockHidden=true
     export function heartRateGetIRRaw(): number {
         if (!hrSafeCheck()) return 0
         return _hrIRLED
@@ -197,6 +202,7 @@ namespace AdvSensors {
      */
     //% block="Si7021 Sensor Setup"
     //% group="온습도(Si7021)" weight=141
+    //% blockHidden=true
     export function si7021Init(): void {
         _si7021Addr = 0x40
         // Soft Reset
@@ -214,6 +220,7 @@ namespace AdvSensors {
     //% block="Si7021 Read Value: $valueType"
     //% valueType.defl=AdvSensors.Si7021Value.TempC
     //% group="온습도(Si7021)" weight=140
+    //% blockHidden=true
     export function si7021Read(valueType: Si7021Value): number {
         if (valueType == Si7021Value.Humidity) {
             // Humidity measurement command (No Hold Master Mode)
@@ -249,6 +256,7 @@ namespace AdvSensors {
      */
     //% block="Si7021 Sensor Reset"
     //% group="온습도(Si7021)" weight=139
+    //% blockHidden=true
     export function si7021Reset(): void {
         // ★ si7021Init 과 같은 이유로 50ms (Adafruit_Si7021::reset 의 delay(50))
         pins.i2cWriteNumber(_si7021Addr, 0xFE, NumberFormat.UInt8BE)
@@ -262,6 +270,7 @@ namespace AdvSensors {
     //% block="Si7021 Read Serial: Serial $serialType"
     //% serialType.defl=AdvSensors.Si7021Serial.A
     //% group="온습도(Si7021)" weight=138
+    //% blockHidden=true
     export function si7021ReadSerial(serialType: Si7021Serial): number {
         if (serialType == Si7021Serial.A) {
             // Electronic ID 1st Byte (SNA)
@@ -297,6 +306,7 @@ namespace AdvSensors {
     //% block="BH1750 init address %addr"
     //% addr.defl=0x23
     //% group="조도(BH1750)" weight=95
+    //% blockHidden=true
     export function bh1750Init(addr: number): void {
         _bh1750Addr = addr
         // Power On
@@ -308,6 +318,7 @@ namespace AdvSensors {
 
     //% block="BH1750 light intensity read (lux)"
     //% group="조도(BH1750)" weight=94
+    //% blockHidden=true
     export function bh1750Read(): number {
         let buf = pins.i2cReadBuffer(_bh1750Addr, 2)
         let raw = (buf[0] << 8) | buf[1]
@@ -337,6 +348,7 @@ namespace AdvSensors {
     //% block="TSL2561 init address %addr"
     //% addr.defl=0x39
     //% group="조도(TSL2561)" weight=90
+    //% blockHidden=true
     export function tsl2561Init(addr: number): void {
         _tsl2561Addr = addr
         // ★ COMMAND(0x80|CONTROL) + POWER UP(0x03) 을 한 트랜잭션으로.
@@ -352,6 +364,7 @@ namespace AdvSensors {
 
     //% block="TSL2561 light intensity read (lux)"
     //% group="조도(TSL2561)" weight=89
+    //% blockHidden=true
     export function tsl2561Read(): number {
         // ★ 아래 lux 근사식 상수(0.0304 등)는 '적분 402ms + 게인 16x' 기준이다.
         //   예전에는 게인이 16x/402ms 로 하드웨어에 고정돼 있고 이를 바꿀 블록도 없어서,
@@ -410,6 +423,7 @@ namespace AdvSensors {
     //% block="ADXL345 init address %addr"
     //% addr.defl=0x53
     //% group="3축 가속도(ADXL345)" weight=85
+    //% blockHidden=true
     export function adxl345Init(addr: number): void {
         _adxl345Addr = addr
         // ★ 설정 순서를 데이터시트 권고대로 바로잡았다.
@@ -423,6 +437,7 @@ namespace AdvSensors {
 
     //% block="ADXL345 acceleration read axis %axis"
     //% group="3축 가속도(ADXL345)" weight=84
+    //% blockHidden=true
     export function adxl345Read(axis: Axis): number {
         // ★ 축마다 따로 읽으면 세 축이 서로 다른 시점의 샘플이 되어 벡터가 어긋난다.
         //   DATAX0(0x32)부터 6바이트를 한 번에 버스트로 읽는다(데이터시트 권고).
@@ -464,6 +479,7 @@ namespace AdvSensors {
     //% block="BME280 init address %addr"
     //% addr.defl=0x76
     //% group="대기압(BME280)" weight=80
+    //% blockHidden=true
     export function bme280Init(addr: number): void {
         _bme280Addr = addr
 
@@ -513,6 +529,7 @@ namespace AdvSensors {
 
     //% block="BME280 calibration loaded?"
     //% group="대기압(BME280)" weight=87
+    //% blockHidden=true
     export function bme280Calibrated(): boolean {
         return _bmeCalOk
     }
@@ -551,6 +568,7 @@ namespace AdvSensors {
 
     //% block="BME280 read %btype"
     //% group="대기압(BME280)" weight=79
+    //% blockHidden=true
     export function bme280Read(btype: BME280Type): number {
         // 모든 데이터 읽기 (0xF7~0xFE)
         pins.i2cWriteNumber(_bme280Addr, 0xF7, NumberFormat.UInt8BE)
@@ -696,6 +714,7 @@ namespace AdvSensors {
     //% baud.defl=57600
     //% group="Fingerprint" weight=75
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function fpInit(rx: SerialPin, tx: SerialPin, baud: number): void {
         _fpRx = rx
         _fpTx = tx
@@ -712,6 +731,7 @@ namespace AdvSensors {
     //% id.defl=1 id.min=1 id.max=162
     //% group="Fingerprint" weight=74
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function fpEnroll(step: FPEnroll, id: number): number {
         USBSerial.uartClaim(USBSerial.UartOwner.Fingerprint)
         serial.readBuffer(0)   // 이전 명령이 남긴 묵은 응답 버리기(비블로킹)
@@ -772,6 +792,7 @@ namespace AdvSensors {
     //% block="Fingerprint search mode: %mode"
     //% mode.defl=AdvSensors.FPSearchMode.Fast
     //% group="Fingerprint" weight=73
+    //% blockHidden=true
     export function fpSearch(mode: FPSearchMode): number {
         USBSerial.uartClaim(USBSerial.UartOwner.Fingerprint)
         serial.readBuffer(0)   // 이전 명령이 남긴 묵은 응답 버리기(비블로킹)
@@ -847,6 +868,7 @@ namespace AdvSensors {
     //% block="Fingerprint result: %result"
     //% result.defl=AdvSensors.FPResult.FingerID
     //% group="Fingerprint" weight=72
+    //% blockHidden=true
     export function fpGetResult(result: FPResult): number {
         if (result == FPResult.FingerID) {
             return _fpFingerID
@@ -861,6 +883,7 @@ namespace AdvSensors {
     //% id.defl=1 id.min=1 id.max=162
     //% group="Fingerprint" weight=71
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function fpDatabase(cmd: FPDatabase, id: number): number {
         USBSerial.uartClaim(USBSerial.UartOwner.Fingerprint)
         serial.readBuffer(0)   // 이전 명령이 남긴 묵은 응답 버리기(비블로킹)
@@ -921,6 +944,7 @@ namespace AdvSensors {
     //% block="Fingerprint LED control %state"
     //% state.defl=AdvSensors.FPLED.On
     //% group="Fingerprint" weight=70
+    //% blockHidden=true
     export function fpLED(state: FPLED): void {
         USBSerial.uartClaim(USBSerial.UartOwner.Fingerprint)
         // LED 제어: EF 01 FF FF FF FF 01 00 07 35 [ctrl] [speed] [color] [count] [CHK]
@@ -1014,6 +1038,7 @@ namespace AdvSensors {
     //% block="INA219 set I2C address %addr"
     //% addr.defl=0x40
     //% group="전류/전압/전력 측정(INA219)" weight=65
+    //% blockHidden=true
     export function ina219Init(addr: number): void {
         _ina219Addr = addr
         _ina219Configured = false   // 주소가 바뀌면 새 장치에 다시 프로그래밍해야 한다
@@ -1022,6 +1047,7 @@ namespace AdvSensors {
 
     //% block="INA219 read %data"
     //% group="전류/전압/전력 측정(INA219)" weight=64
+    //% blockHidden=true
     export function ina219Read(data: INA219Data): number {
         // 초기화 블록을 끌어오지 않아도 첫 읽기에서 한 번 프로그래밍한다
         if (!_ina219Configured) ina219Configure()
@@ -1079,6 +1105,7 @@ namespace AdvSensors {
 
     //% block="CCS811 init"
     //% group="CO2센서(CCS811)" weight=88
+    //% blockHidden=true
     export function ccs811Init(): void {
         _ccs811CO2 = -1; _ccs811TVOC = -1; _ccs811ValidAt = -10000; _ccs811Error = 0
         // 앱 시작 명령
@@ -1091,6 +1118,7 @@ namespace AdvSensors {
 
     //% block="CCS811 read %ctype"
     //% group="CO2센서(CCS811)" weight=87
+    //% blockHidden=true
     export function ccs811Read(ctype: CCS811Type): number {
         pins.i2cWriteNumber(_ccs811Addr, 0x00, NumberFormat.UInt8BE, true)
         let status = pins.i2cReadNumber(_ccs811Addr, NumberFormat.UInt8BE)
@@ -1169,6 +1197,7 @@ namespace AdvSensors {
     //% block="I2C Weight Sensor set address $addr"
     //% addr.defl=99
     //% group="I2C 무게센서" weight=58
+    //% blockHidden=true
     export function i2cWeightSetAddress(addr: number): void {
         _i2cWeightAddr = addr
         _i2cWeightOffset = 0
@@ -1183,6 +1212,7 @@ namespace AdvSensors {
      */
     //% block="I2C Weight Sensor read weight"
     //% group="I2C 무게센서" weight=57
+    //% blockHidden=true
     export function i2cWeightRead(): number {
         let raw = i2cWeightRaw()
         if (_i2cWeightScale == 0) return 0

@@ -34,7 +34,7 @@
 | TF/SD 카드 어댑터 | 미지원 → 미지원 | 없음 / 확인 필요 | SPI SD 초기화·파일 읽기·쓰기 없음. EEPROM/MP3의 SD 재생은 파일 저장 API가 아님. | W2 `Sheet1!C89`; W3 `Sheet1!B26`; W4 `Sheet1!E82`; W4 `Sheet2!C7` |
 | RF433 수신기 | 미지원 → 미지원 | 없음 / 확인 필요 | 433MHz OOK/ASK 디코딩 없음. nRF24L01/LoRa/micro:bit radio는 대체 불가. | W1 `IO device!C89`; W1 `Sheet1!B72`; W1 `Communi!C5`; W2 `Sheet1!C94`; W4 `Sheet1!E101`; W4 `Sheet2!C15` |
 | RF433 송신기 | 미지원 → 미지원 | 없음 / 확인 필요 | 433MHz 펄스 프레임 인코딩 없음. | W1 `IO device!C88`; W1 `Sheet1!B71`; W1 `Communi!C4`; W2 `Sheet1!C93`; W4 `Sheet1!E102`; W4 `Sheet2!C16` |
-| 외장 Bluetooth 4.0(JDY-33) | 일부 지원·제약 → 일부 지원·제약 | `USBSerial.serialStart`<br>`USBSerial.serialSend` | 외장 UART로 송수신 가능하나 전용 이름·초기화 없음. Bluetooth10은 micro:bit 내장 BLE. | W1 `IO device!C91`; W1 `Sheet1!B53`; W1 `Communi!C7`; W2 `Sheet1!C96`; W4 `Sheet1!E104`; W4 `Sheet2!C10` |
+| 외장 Bluetooth 4.0(JDY-33) | 일부 지원·제약 → 일부 지원·제약 | `USBSerial.serialStart`<br>`USBSerial.serialSend` | 외장 UART로 송수신 가능하나 전용 이름·초기화 없음. Bluetooth10은 micro:bit 내장 BLE(v0.3.0부터 짝 확장 pxt-brixel-physical-computing-ble). | W1 `IO device!C91`; W1 `Sheet1!B53`; W1 `Communi!C7`; W2 `Sheet1!C96`; W4 `Sheet1!E104`; W4 `Sheet2!C10` |
 | 외장 Bluetooth(HC-06) | 일부 지원·제약 → 일부 지원·제약 | `USBSerial.serialStart`<br>`USBSerial.serialSend` | UART 통신을 수동 설정해야 함. 내장 BLE 블록으로 HC-06을 제어하지 못함. | W1 `IO device!C90`; W1 `Sheet1!B52`; W1 `Communi!C6`; W2 `Sheet1!C95`; W4 `Sheet1!E103`; W4 `Sheet2!C9` |
 | Wi-Fi(ESP8266/ESP12E) | 일부 지원·제약 → 전용 블록 구현 | `WiFi08.wifiStart`<br>`WiFi08.wsServerStart`<br>`WiFi08.wsSend`<br>`WiFi08.wsSendSucceeded` | ESP-AT TCP에 WebSocket handshake·마스킹·텍스트 프레임·ping/pong 구현. UTF-8 1024바이트 제한. UART 독점 필요; ESP 펌웨어/실물 시험 남음. | W1 `IO device!C92`; W1 `Sheet1!B51`; W1 `Communi!C8`; W2 `Sheet1!C97`; W4 `Sheet1!E106`; W4 `Sheet2!C17` |
 | GPS(ATGM332D) | 일부 지원·제약 → 전용 블록 구현 | `Communications07.gpsInit`<br>`Communications07.gpsUpdate`<br>`Communications07.gpsHasFix`<br>`Communications07.gpsRead` | 유효 NMEA 수신이 3초 이상 중단되면 FIX false·숫자 -9999. 좌표 정확도/실외 수신 시험은 별도. | W1 `IO device!C93`; W1 `Communi!C9`; W2 `Sheet1!C98`; W4 `Sheet1!E47`; W4 `Sheet2!C11` |
@@ -136,7 +136,7 @@
 - **SD/TF**: SPI 카드 초기화와 FAT 파일 읽기·쓰기 구현이 없다. MP3 모듈의 SD 음원 재생과는 다르다.
 - **RF433 송수신**: OOK/ASK 프로토콜 구현이 없다. LoRa·nRF24L01·micro:bit radio로 대체할 수 없다.
 - **모델 확인**: L293DD 4핀 모듈, TC118 팬 보드, HX711 I2C 어댑터, 모델 미기재 먼지·거리·도트매트릭스는 배선 또는 모델 확인 후 맞는 드라이버를 선택해야 한다.
-- **외장 Bluetooth**: HC-06/JDY-33은 USBSerial의 핀 UART 설정을 사용한다. Bluetooth10은 micro:bit 내장 BLE다.
+- **외장 Bluetooth**: HC-06/JDY-33은 USBSerial의 핀 UART 설정을 사용한다. Bluetooth10은 micro:bit 내장 BLE다(v0.3.0부터 짝 확장 pxt-brixel-physical-computing-ble).
 - **가스 MQ 계열**: 사용자 요청대로 원시 아날로그 블록을 사용한다. 가스별 보정 없는 ppm 값을 실제 농도로 해석하지 않는다.
 
 보정과 오류값은 [센서별 사용·보정 안내](sensor-calibration.md), 변경 및 검증 결과는 [안정화 보고서](stability-20261008.md)를 참고한다.

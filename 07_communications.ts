@@ -632,6 +632,7 @@ let _irFrameCode: number = 0
     //% tx.defl=SerialPin.P1
     //% group="GPS" weight=53
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function gpsInit(serialType: GPSSerial, baud: number, rx: SerialPin, tx: SerialPin): void {
         _gpsValidAt = -10000
         for (let i=0;i<8;i++) _gpsFieldAt[i] = -10000
@@ -660,6 +661,7 @@ let _irFrameCode: number = 0
 
     //% block="GPS update (serial receive → parsing)"
     //% group="GPS" weight=52
+    //% blockHidden=true
     export function gpsUpdate(): void {
         USBSerial.uartClaim(USBSerial.UartOwner.GPS)
         // NMEA 문장 읽기
@@ -708,6 +710,7 @@ let _irFrameCode: number = 0
 
     //% block="GPS value read %dataType"
     //% group="GPS" weight=51
+    //% blockHidden=true
     export function gpsRead(dataType: GPSData): number {
         if (!gpsFieldFresh(dataType)) return -9999
         if (dataType <= GPSData.Course && !_gpsFix) return -9999
@@ -727,6 +730,7 @@ let _irFrameCode: number = 0
 
     //% block="GPS signal acquired (FIX)?"
     //% group="GPS" weight=50
+    //% blockHidden=true
     export function gpsHasFix(): boolean {
         // 의미 차이 기록: 아두이노 gps_has_fix 는 gps.location.isValid() 라서 한 번
         // 측위에 성공하면 그 뒤 신호가 끊겨도 계속 참이다(TinyGPS++.cpp:337-343 에서
@@ -744,6 +748,7 @@ let _irFrameCode: number = 0
     //% lat2.defl=35.1796 lon2.defl=129.0756
     //% group="GPS" weight=49
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function gpsCalculate(calcType: GPSCalcType, lat1: number, lon1: number, lat2: number, lon2: number): number {
         // Haversine 공식으로 거리 계산
         // 반지름은 TinyGPS++ 가 쓰는 값과 같게 맞춘다(TinyGPS++.cpp:287-290, :307).
@@ -775,6 +780,7 @@ let _irFrameCode: number = 0
     //% block="bearing 16 directionsto|angle %angle"
     //% angle.defl=0
     //% group="GPS" weight=48
+    //% blockHidden=true
     export function gpsBearingTo16(angle: number): string {
         let directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
             "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
@@ -784,6 +790,7 @@ let _irFrameCode: number = 0
 
     //% block="GPS time (UTC)"
     //% group="GPS" weight=47
+    //% blockHidden=true
     export function gpsGetTime(): string {
         if (!gpsFieldFresh(GPSData.Time)) return ""
         return _gpsTime
@@ -791,6 +798,7 @@ let _irFrameCode: number = 0
 
     //% block="GPS date"
     //% group="GPS" weight=46
+    //% blockHidden=true
     export function gpsGetDate(): string {
         if (!gpsFieldFresh(GPSData.Date)) return ""
         return _gpsDate

@@ -758,7 +758,6 @@
   "Actuators05.pca9685DcMotorWheelA|block": "מנוע מנהל התקן %index גלגל A כיוון %dir מהירות %speed \\%",
   "Actuators05.pca9685DcMotorWheelBTimed|block": "מנוע מנהל התקן %index גלגל B כיוון %dir מהירות %speed \\% משך %duration ms",
   "Actuators05.pca9685DcMotorWheelB|block": "מנוע מנהל התקן %index גלגל B כיוון %dir מהירות %speed \\%",
-  "Bluetooth10.btGetReceived|block": "📥 BT התקבל ערך",
   "Sensors03.uvSetReference|block": "UV sensor calibrate $dtype reference $reference",
   "Communications07.irFrameCode|block": "IR remote frame (32 bit)",
   "WiFi08.wsSendSucceeded|block": "WS last send succeeded?",

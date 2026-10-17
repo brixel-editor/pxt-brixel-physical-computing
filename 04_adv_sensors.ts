@@ -89,6 +89,7 @@ namespace AdvSensors {
     //% block="RTC(DS1307) set %addr"
     //% addr.defl=0x68
     //% group="실시간(RTC)" weight=180
+    //% blockHidden=true
     export function rtcInit(addr: number): void {
         _rtcAddr = rtcAddrOf(addr)
         // 오실레이터 활성화 = 초 레지스터의 CH(bit7) 만 0 으로.
@@ -112,6 +113,7 @@ namespace AdvSensors {
     //% second.defl=0 second.min=0 second.max=59
     //% group="실시간(RTC)" weight=179
     //% inlineInputMode=inline
+    //% blockHidden=true
     export function rtcSetTime(addr: number, year: number, month: number, day: number, hour: number, minute: number, second: number): void {
         let a = rtcAddrOf(addr)
         let buf = pins.createBuffer(8)
@@ -152,6 +154,7 @@ namespace AdvSensors {
     //% block="RTC %addr|get %data"
     //% addr.defl=1
     //% group="실시간(RTC)" weight=178
+    //% blockHidden=true
     export function rtcGet(addr: number, data: RTCData): number {
         rtcReadAll(addr)
 
@@ -171,6 +174,7 @@ namespace AdvSensors {
     //% addr.defl=1
     //% action.shadow="toggleOnOff" action.defl=true
     //% group="실시간(RTC)" weight=177
+    //% blockHidden=true
     export function rtcStart(addr: number, action: boolean): void {
         let a = rtcAddrOf(addr)
         // 초 레지스터의 CH 비트로 시계 시작/정지
@@ -192,6 +196,7 @@ namespace AdvSensors {
     //% block="RTC %addr|SQW output %freq"
     //% addr.defl=1
     //% group="실시간(RTC)" weight=176
+    //% blockHidden=true
     export function rtcSetSqw(addr: number, freq: RTCSqwFreq): void {
         let a = rtcAddrOf(addr)
         let control = 0x00
@@ -223,6 +228,7 @@ namespace AdvSensors {
     //% block="RTC %addr|time string get format %format"
     //% addr.defl=1
     //% group="실시간(RTC)" weight=175
+    //% blockHidden=true
     export function rtcGetString(addr: number, format: RTCFormat): string {
         rtcReadAll(addr)
 
@@ -282,6 +288,7 @@ namespace AdvSensors {
 
     //% block="RTC time valid?"
     //% group="실시간(RTC)" weight=174
+    //% blockHidden=true
     export function rtcTimeValid(): boolean {
         // ★ 예전에는 캐시(_rtcValid)만 읽어서, rtcGet/rtcGetString 을 한 번도 호출하지 않은
         //   "먼저 검사 → 그 다음 읽기" 패턴에서 영원히 false 로 굳어 있었다.
@@ -893,6 +900,7 @@ namespace AdvSensors {
     //% block="VL53L0X init I2C address %addr"
     //% addr.defl=41
     //% group="거리센서(VL53L0X)" weight=150
+    //% blockHidden=true
     export function vl53l0xInit(addr: number): void {
         // ★ 아두이노 DFRobot_VL53L0X::begin(addr) 은 먼저 내부 주소를 기본값 0x29 로 되돌리고
         //   0x29 에 대고 dataInit() 을 돌린 뒤, setDeviceAddress(addr) 로
@@ -992,6 +1000,7 @@ namespace AdvSensors {
 
     //% block="VL53L0X set mode | mode %mode | precision %precision"
     //% group="거리센서(VL53L0X)" weight=149
+    //% blockHidden=true
     export function vl53l0xSetMode(mode: VL53L0XMode, precision: VL53L0XPrecision): void {
         _vl53l0xMode = mode
         _vl53l0xPrecision = precision
@@ -1022,6 +1031,7 @@ namespace AdvSensors {
 
     //% block="VL53L0X control %control"
     //% group="거리센서(VL53L0X)" weight=148
+    //% blockHidden=true
     export function vl53l0xControl(control: VL53L0XControl): void {
         if (control == VL53L0XControl.Start) {
             // ★ 예전에는 레지스터 주소 0x00 만 보내고(값 없음) 포인터가 어디 있든 2바이트를 읽었다.
@@ -1052,6 +1062,7 @@ namespace AdvSensors {
 
     //% block="VL53L0X read %readType"
     //% group="거리센서(VL53L0X)" weight=147
+    //% blockHidden=true
     export function vl53l0xRead(readType: VL53L0XReadType): number {
         // ★ 연속 모드에서는 센서가 계속 측정하는데 예전에는 아무도 다시 읽지 않아
         //   control(Start) 때 잡힌 첫 샘플에 값이 굳어 있었다.

@@ -15,7 +15,5 @@ input.onButtonPressed(Button.AB, function () {
     Communications07.irInit(DigitalPin.P16)
     WiFi08.wifiIsConnected()
     USBSerial.serialSend("123")
-    Bluetooth10.btStart()
-    Bluetooth10.btSend("123")
     AdvSensors.i2cWeightTare(5)
 })

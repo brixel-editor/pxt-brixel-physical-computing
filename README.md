@@ -1,6 +1,12 @@
-# BRIXEL Physical Computing — v0.2.0
+# BRIXEL Physical Computing — v0.3.0
 
-micro:bit V2에서 디스플레이, 센서, 모터, 출력 장치와 통신 장치를 제어하는 BRIXEL MakeCode 확장입니다. **476개 블록, 10개 카테고리**를 제공합니다. 기존 435개 블록의 함수·매개변수와 enum 값은 유지하고, 센서 이름으로 읽는 블록·기준 보정·16채널 서보 제어 등 41개를 추가했습니다. 기존 35개 언어 자료를 유지하며 새 블록은 한국어와 영어를 제공합니다(다른 언어에서는 새 블록이 영어로 표시됨).
+micro:bit V2에서 디스플레이, 센서, 모터, 출력 장치와 통신 장치를 제어하는 BRIXEL MakeCode 확장입니다. **v0.3.0부터 USB(유선) 본 확장**입니다 — 블루투스 블록은 짝 확장 [pxt-brixel-physical-computing-ble](https://github.com/brixel-editor/pxt-brixel-physical-computing-ble)로 옮겼고, 센서는 **브릭셀 마빗 실드 V2에서 안전하게 쓰는 센서**만 도구 상자에 보입니다. 블록 함수 465개 중 **보이는 블록 322개, 9개 카테고리**입니다.
+
+## v0.3.0 바뀐 점 (USB 본 확장 + 블루투스 짝 확장)
+
+- **블루투스(내장 BLE) 블록을 짝 확장으로 분리**했습니다. `bluetooth` 의존성이 있으면 블록을 안 써도 전원을 켜는 순간 BLE 가 돌아 DHT11 같은 µs 단위 센서 읽기를 깨고, 메모리를 쓰고, `radio`와 충돌합니다. 이제 이 확장의 의존성은 `core` 하나입니다(`microphone`도 쓰지 않아 뺐습니다).
+- 블루투스가 필요하면 `https://github.com/brixel-editor/pxt-brixel-physical-computing-ble` 를 **추가로** 넣습니다. blockId와 JavaScript 이름(`Bluetooth10.*`)이 그대로라 예전 작품의 블루투스 블록이 다시 붙습니다.
+- 마빗 실드 V2 는 신호선을 micro:bit 핀에 바로 잇습니다(레벨 변환 없음). 신호가 3.3V를 넘거나 펌웨어 추가가 필요하거나 UART 를 쓰는 센서의 블록은 **숨겼습니다**(지우지 않음 — 예전 작품은 그대로 열리고 동작합니다). 숨긴 장치: US-100 · LM35 · HX711 · PMS · GP2Y0A21YK · MH-Z19 · MQ 계열 · 탁도 · 지문(UART·I2C) · 고온(K-Type) · 키패드 · WCS2801 · GP2Y1014 · RTC · VL53L0X · APDS9960 · MAX30102 · Si7021 · BH1750 · TSL2561 · ADXL345 · BME280 · INA219 · CCS811 · I2C 무게 · EEPROM · GPS · 빗물 · 무한 회전 · 포토인터럽터.
 
 ## 장치별 안내 바로가기
 
@@ -14,7 +20,7 @@ micro:bit V2에서 디스플레이, 센서, 모터, 출력 장치와 통신 장�
 
 **[피지컬컴퓨팅 프로젝트 열기](https://makecode.microbit.org/_Fo84JDihLTPm)**
 
-아래 QR코드를 스캔하거나 위 링크를 누른 뒤 **코드 수정**을 선택하세요. 이 공유 프로젝트는 생성 당시의 **v0.1.0**을 포함합니다. 새 기능을 쓰려면 에디터에서 확장을 **v0.2.0으로 업데이트**해야 합니다. 공유 링크의 내용은 새 릴리스를 올려도 자동으로 바뀌지 않습니다. 이 시작 프로젝트에는 `radio`가 없습니다.
+아래 QR코드를 스캔하거나 위 링크를 누른 뒤 **코드 수정**을 선택하세요. 이 공유 프로젝트는 생성 당시의 **v0.1.0**을 포함합니다. 새 기능을 쓰려면 에디터에서 확장을 **v0.3.0으로 업데이트**해야 합니다. 공유 링크의 내용은 새 릴리스를 올려도 자동으로 바뀌지 않습니다. 이 시작 프로젝트에는 `radio`가 없습니다.
 
 [![피지컬컴퓨팅 시작 프로젝트 QR코드](docs/physical-computing-qr.png)](https://makecode.microbit.org/_Fo84JDihLTPm)
 
@@ -22,30 +28,29 @@ micro:bit V2에서 디스플레이, 센서, 모터, 출력 장치와 통신 장�
 
 1. [MakeCode micro:bit](https://makecode.microbit.org/)에서 새 프로젝트를 만듭니다.
 2. **확장**을 열고 아래 주소를 검색창에 붙여 넣습니다.
-3. **brixel-physical-computing**을 선택합니다. 내장 BLE를 포함하므로 `radio`와의 충돌 안내가 나오면 **radio를 제거하고 확장 추가**를 선택합니다.
-4. 도구 상자에서 `디스플레이`, `센서`, `모터장치`, `블루투스` 등 10개 카테고리를 확인합니다. 언어 설정이 영어이면 번호가 붙은 영어 카테고리로 표시됩니다.
+3. **brixel-physical-computing**을 선택합니다. v0.3.0부터 블루투스가 없어 `radio`와 함께 쓸 수 있습니다(블루투스 짝 확장을 넣을 때만 radio 를 빼야 합니다).
+4. 도구 상자에서 `디스플레이`, `센서`, `모터장치`, `USB 시리얼` 등 9개 카테고리를 확인합니다. 언어 설정이 영어이면 번호가 붙은 영어 카테고리로 표시됩니다.
 
 ```text
-https://github.com/brixel-editor/pxt-brixel-physical-computing#v0.2.0
+https://github.com/brixel-editor/pxt-brixel-physical-computing#v0.3.0
 ```
 
 이 주소로 설치하는 공개 확장입니다. MakeCode 기본 검색 목록에 등록되는 공식 승인 여부와는 별개입니다. 기존 프로젝트는 **JavaScript → 탐색기 → brixel-physical-computing 옆 버전/업데이트 버튼**으로 갱신합니다.
 
 ## 포함한 카테고리
 
-| 카테고리 | 주요 장치·기능 | 블록 수 |
+| 카테고리 | 주요 장치·기능 | 보이는 블록(전체) |
 |---|---|---:|
-| 01. Displays | LCD, TM1637 숫자 표시, NeoPixel | 29 |
-| 02. Adv Displays | SSD1306/SH1106 OLED, HT16K33, MAX7219, 74HC595, TFT | 60 |
-| 03. Sensors | 온습도·수온·초음파·NTC·무게·미세먼지·가스·pH·TDS·탁도·전압·지문 등 | 131 |
-| 04. Adv Sensors | RTC, 기압, 가속도·자이로, 색상·제스처, 심박, I2C 무게 등 | 92 |
-| 05. Actuators | 서보, GeekServo, DC 모터, 스테퍼와 모터 드라이버 | 52 |
-| 06. Output Device | 부저, 오디오 모듈, EEPROM | 35 |
-| 07. Communications | IR, RFID/NFC, nRF24L01, LoRa, GPS 등 | 40 |
-| 08. WiFi | ESP AT 모듈 연결, WebSocket 송수신·성공 확인 | 12 |
-| 09. USB Serial | USB/핀 시리얼 송수신, 수신 이벤트·문자열 분리 | 14 |
-| 10. Bluetooth | 내장 BLE UART 송수신, 연결·수신 이벤트 | 11 |
-| **합계** | 블록 함수 정의 수(숨긴 보조 함수 포함), 드롭다운 항목 제외 | **476** |
+| 01. Displays | LCD, TM1637 숫자 표시, NeoPixel | 27 (29) |
+| 02. Adv Displays | SSD1306/SH1106 OLED, HT16K33, MAX7219, 74HC595, TFT | 58 (60) |
+| 03. Sensors | 온습도·수온·초음파·NTC·UV·pH·TDS·전류(ACS712)·전압·조이스틱·로터리 엔코더·아날로그/디지털 입력 | 69 (131) |
+| 04. Adv Sensors | BMP280 기압, MPU6050, SGP30, SHT30/31, TCS34725 색상, MLX90614 | 30 (92) |
+| 05. Actuators | 서보, GeekServo, DC 모터, 스테퍼와 모터 드라이버 | 52 (52) |
+| 06. Output Device | 부저, 오디오 모듈 | 28 (35) |
+| 07. Communications | IR, RFID/NFC, nRF24L01, LoRa | 32 (40) |
+| 08. WiFi | ESP AT 모듈 연결, WebSocket 송수신·성공 확인 | 12 (12) |
+| 09. USB Serial | USB/핀 시리얼 송수신, 수신 이벤트·문자열 분리 | 14 (14) |
+| **합계** | 괄호 = 숨긴 블록 포함 함수 정의 수, 드롭다운 항목 제외 | **322 (465)** |
 
 ## 첫 실행 예제: 서보 각도
 
@@ -64,7 +69,7 @@ input.onButtonPressed(Button.B, function () {
 
 - 실드 소켓 번호 대신 실제 micro:bit **P핀 번호**를 설정합니다. 모듈의 신호 전압, 전원 용량, I2C 주소 중복과 공유 핀을 확인합니다. 5V 신호를 micro:bit 핀에 직접 입력하지 않습니다.
 - 센서 UART와 USB는 기존 확장의 `USBSerial` 중재 코드로 핀을 전환합니다. 여러 UART 모듈의 연속 데이터를 동시에 수집하는 구조가 아니며 소유권을 잃은 동안 수신이 누락될 수 있습니다. WiFi는 micro:bit 자체 무선 인터넷이 아니라 별도 ESP AT 모듈을 사용합니다.
-- 476개 정의에는 숨긴 색상 보조 블록과 폐기 예정 초기화 블록도 포함됩니다. 팔레트의 눈에 보이는 블록 수와 같지 않습니다.
+- 465개 정의에는 숨긴 색상 보조 블록·폐기 예정 초기화 블록과 v0.3.0에서 숨긴 실드 밖 센서 블록도 포함됩니다. 팔레트의 눈에 보이는 블록 수와 같지 않습니다.
 - v0.2.0은 원시값·실제 단위를 구분하고, 센서의 무응답·오래된 값·CRC 오류 처리를 보강했습니다. 호환성·번역 매개변수 검사, 모의 I/O 회귀 시험과 V2 네이티브 빌드로 검증합니다. **실물 전 장치의 동작이나 측정 정확도는 아직 검증하지 않았습니다.**
 - 새 전류·전압·탁도 보정은 재시작하면 지워집니다. 측정 전에 기준 조건에서 다시 보정하세요. 물리량·오류값·준비물은 위의 센서별 안내에 있습니다.
 - MH-Z19D는 시작 후 60초 예열하며 CO₂ 실패값은 -1입니다. 초기화만으로 자동 보정 설정을 바꾸지 않습니다. 기존 계열의 온도·범위·상태 API가 D 모델에서도 유효한지는 실물 확인이 필요합니다.

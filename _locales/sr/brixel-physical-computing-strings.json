@@ -694,7 +694,6 @@
   "Communications07.GPSCalcType.DistanceKm|block": "растојање(км)",
   "Communications07.GPSCalcType.Bearing|block": "смер(°)",
   "Communications07.gpsUpdate|block": "ГПС ажурирај (пријем са серијског → обрада)",
-  "Bluetooth10|block": "10. Bluetooth",
   "Sensors03.uvSetReference|block": "UV sensor calibrate $dtype reference $reference",
   "Communications07.irFrameCode|block": "IR remote frame (32 bit)",
   "WiFi08.wsSendSucceeded|block": "WS last send succeeded?",
