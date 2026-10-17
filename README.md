@@ -5,7 +5,7 @@ micro:bit V2에서 디스플레이, 센서, 모터, 출력 장치와 통신 장�
 ## v0.3.0 바뀐 점 (USB 본 확장 + 블루투스 짝 확장)
 
 - **블루투스(내장 BLE) 블록을 짝 확장으로 분리**했습니다. `bluetooth` 의존성이 있으면 블록을 안 써도 전원을 켜는 순간 BLE 가 돌아 DHT11 같은 µs 단위 센서 읽기를 깨고, 메모리를 쓰고, `radio`와 충돌합니다. 이제 이 확장의 의존성은 `core` 하나입니다(`microphone`도 쓰지 않아 뺐습니다).
-- 블루투스가 필요하면 `https://github.com/brixel-editor/pxt-brixel-physical-computing-ble` 를 **추가로** 넣습니다. blockId와 JavaScript 이름(`Bluetooth10.*`)이 그대로라 예전 작품의 블루투스 블록이 다시 붙습니다.
+- **유선 = 이 본 확장 하나 / 무선 = 블루투스 확장 [`pxt-brixel-physical-computing-ble`](https://github.com/brixel-editor/pxt-brixel-physical-computing-ble) 하나**(이 본 확장의 모든 블록이 자동으로 함께 들어옵니다 — 둘을 같이 넣을 필요 없음). blockId와 JavaScript 이름(`Bluetooth10.*`)이 그대로라 예전 작품도 블루투스 확장을 넣으면 블루투스 블록이 다시 붙습니다.
 - 마빗 실드 V2 는 신호선을 micro:bit 핀에 바로 잇습니다(레벨 변환 없음). 신호가 3.3V를 넘거나 펌웨어 추가가 필요하거나 UART 를 쓰는 센서의 블록은 **숨겼습니다**(지우지 않음 — 예전 작품은 그대로 열리고 동작합니다). 숨긴 장치: US-100 · LM35 · HX711 · PMS · GP2Y0A21YK · MH-Z19 · MQ 계열 · 탁도 · 지문(UART·I2C) · 고온(K-Type) · 키패드 · WCS2801 · GP2Y1014 · RTC · VL53L0X · APDS9960 · MAX30102 · Si7021 · BH1750 · TSL2561 · ADXL345 · BME280 · INA219 · CCS811 · I2C 무게 · EEPROM · GPS · 빗물 · 무한 회전 · 포토인터럽터.
 
 ## 장치별 안내 바로가기
@@ -28,7 +28,7 @@ micro:bit V2에서 디스플레이, 센서, 모터, 출력 장치와 통신 장�
 
 1. [MakeCode micro:bit](https://makecode.microbit.org/)에서 새 프로젝트를 만듭니다.
 2. **확장**을 열고 아래 주소를 검색창에 붙여 넣습니다.
-3. **brixel-physical-computing**을 선택합니다. v0.3.0부터 블루투스가 없어 `radio`와 함께 쓸 수 있습니다(블루투스 짝 확장을 넣을 때만 radio 를 빼야 합니다).
+3. **brixel-physical-computing**을 선택합니다. v0.3.0부터 블루투스가 없어 `radio`와 함께 쓸 수 있습니다. 블루투스 수업이면 이 주소 대신 `https://github.com/brixel-editor/pxt-brixel-physical-computing-ble` **하나만** 넣습니다(본 확장 자동 포함, radio 는 빼야 함).
 4. 도구 상자에서 `디스플레이`, `센서`, `모터장치`, `USB 시리얼` 등 9개 카테고리를 확인합니다. 언어 설정이 영어이면 번호가 붙은 영어 카테고리로 표시됩니다.
 
 ```text
