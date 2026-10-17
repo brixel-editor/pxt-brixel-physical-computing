@@ -769,7 +769,7 @@ namespace Sensors03 {
         }
         let adcValue = adcSum / 5
 
-        // 회로: Vcc -- [서미스터(NTC)] -- [ADC] -- [직렬저항] -- GND
+        // 회로(v0.4.1 정정): 브릭셀 모듈은 Vcc -- [직렬저항] -- [ADC] -- [서미스터(NTC)] -- GND
         //   (thermistor.cpp:31-33 이 명시하는 유일한 지원 배선이다)
         // 프로브 단선이면 ADC 가 0 으로 떨어져 분모가 0(저항 무한대), 단락이면 1023 이라
         // 저항 0 → log(0) 이 되므로 양쪽 다 오류값 -999 로 알린다.
@@ -779,7 +779,10 @@ namespace Sensors03 {
         // ★ 기존 식 Rs*adc/(1023-adc) 는 이 배선의 역수라서, Rs = R25 = 10k 인 기본 설정에서는
         //   결과가 25°C 를 중심으로 거울처럼 뒤집혔다(실제 40°C 가 약 11.4°C 로, 10°C 가 약 41°C 로
         //   나오고 온도를 올리면 숫자가 내려갔다).
-        let resistance = _thermistorSeriesR * (1023 - adcValue) / adcValue
+        // ★v0.4.1(2026-10-17 실기): 브릭셀 NTC 모듈(`A_005`)은 «VCC–직렬저항–측정점–NTC–GND» 라
+        //   R = Rs × adc / (1023 − adc) 다. 위의 «NTC 가 위» 식은 이 모듈에선 거꾸로였다
+        //   (실내 25~27℃ 가 22.8℃, 손으로 잡으면 18.9℃ 로 내려갔다 — 고친 식으로는 27.2℃ → 31.4℃).
+        let resistance = _thermistorSeriesR * adcValue / (1023 - adcValue)
 
         // Steinhart-Hart Beta 파라미터 방정식
         // 1/T = 1/T0 + (1/B) * ln(R/R0)
@@ -815,11 +818,12 @@ namespace Sensors03 {
     export function thermistorReadResistance(): number {
         // 아두이노의 독립 저항 함수(11_sensors_a.js:369-378)는 일부러 단일 샘플만 쓴다 — 그대로 맞춘다.
         let adcValue = pins.analogReadPin(_thermistorPin)
-        if (adcValue >= 1023) return 0        // 서미스터 단락 → 저항 0
-        if (adcValue <= 0) return 999999      // 서미스터 단선 → 저항 무한대
+        if (adcValue <= 0) return 0            // v0.4.1: NTC 단락(측정점이 GND)        // 서미스터 단락 → 저항 0
+        if (adcValue >= 1023) return 999999    // v0.4.1: NTC 단선(측정점이 VCC)      // 서미스터 단선 → 저항 무한대
 
         // R = Rs * (1023/adc - 1). 아두이노 getThermistorResistance() 와 같은 식이다.
-        let resistance = _thermistorSeriesR * (1023 - adcValue) / adcValue
+        // v0.4.1: 브릭셀 NTC 모듈 = VCC–Rs–측정점–NTC–GND → R = Rs × adc / (1023 − adc)
+        let resistance = _thermistorSeriesR * adcValue / (1023 - adcValue)
         return Math.round(resistance)
     }
 
