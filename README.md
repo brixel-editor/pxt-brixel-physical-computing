@@ -1,6 +1,6 @@
 # BRIXEL Physical Computing — v0.4.0
 
-micro:bit V2에서 디스플레이, 센서, 모터, 출력 장치와 통신 장치를 제어하는 BRIXEL MakeCode 확장입니다. **v0.3.0부터 USB(유선) 본 확장**입니다 — 블루투스 블록은 짝 확장 [pxt-brixel-physical-computing-ble](https://github.com/brixel-editor/pxt-brixel-physical-computing-ble)로 옮겼고, 센서는 **브릭셀 마빗 실드 V2에서 안전하게 쓰는 센서**만 도구 상자에 보입니다. 블록 함수 467개 중 **보이는 블록 324개, 9개 카테고리**입니다.
+micro:bit V2에서 디스플레이, 센서, 모터, 출력 장치와 통신 장치를 제어하는 BRIXEL MakeCode 확장입니다. **v0.3.0부터 USB(유선) 본 확장**입니다 — 블루투스 블록은 짝 확장 [pxt-brixel-physical-computing-ble](https://github.com/brixel-editor/pxt-brixel-physical-computing-ble)로 옮겼고, 센서는 **브릭셀 마빗 실드 V2에서 안전하게 쓰는 센서**만 도구 상자에 보입니다. 블록 함수 467개 중 **보이는 블록 330개, 9개 카테고리**입니다.
 
 ## v0.4.0 바뀐 점 (센서 계산·멈춤 방지·재시도)
 

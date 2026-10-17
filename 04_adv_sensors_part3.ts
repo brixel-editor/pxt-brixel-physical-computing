@@ -1197,7 +1197,6 @@ namespace AdvSensors {
     //% block="I2C Weight Sensor set address $addr"
     //% addr.defl=99
     //% group="I2C 무게센서" weight=58
-    //% blockHidden=true
     export function i2cWeightSetAddress(addr: number): void {
         _i2cWeightAddr = addr
         _i2cWeightOffset = 0
@@ -1212,9 +1211,12 @@ namespace AdvSensors {
      */
     //% block="I2C Weight Sensor read weight"
     //% group="I2C 무게센서" weight=57
-    //% blockHidden=true
     export function i2cWeightRead(): number {
         let raw = i2cWeightRaw()
+        // v0.4.0: 모듈 없음·무효 프레임이면 -1 (브릭셀 우노 펌웨어 `i2cweight` · DSL마빗 카드와 같은 관례).
+        //   예전엔 마지막 성공값(처음엔 0)을 돌려 모듈이 빠져도 0g 으로 보였다.
+        //   ★ 실드 V2 의 I2C 커넥터는 3.3V — 브릭셀 무게 모듈(HX711+I2C 0x63)이 3.3V 에서 도는지 실물 확인 필요.
+        if (_i2cWeightBad) return -1
         if (_i2cWeightScale == 0) return 0
         return (raw - _i2cWeightOffset) / _i2cWeightScale
     }
