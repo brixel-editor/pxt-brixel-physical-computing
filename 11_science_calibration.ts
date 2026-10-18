@@ -77,12 +77,12 @@ namespace Sensors03 {
     /** A_013/A_014 turbidity module signal to the selected micro:bit analog pin. Raw 0..1023, no calibration needed; not NTU. Signal must stay within 0..3.3V and board supply. Invalid pin=-1; disconnection cannot be reliably detected. */
     //%  block="turbidity sensor pin $pin raw value" group="탁도(Turbidity)" weight=90
     //% pin.defl=AnalogPin.P1
-        export function turbidityRaw(pin: AnalogPin): number { return BrixelInternal.analog(pin) }
+    export function turbidityRaw(pin: AnalogPin): number { return BrixelInternal.analog(pin) }
 
     /** Put the probe in clear water, shield ambient light and capture the selected analog input. Raw 5..1022 required. Invalid recalibration clears the old reference on that pin. Calibration resets on program restart. */
     //%  block="turbidity sensor pin $pin calibrate clear water" group="탁도(Turbidity)" weight=70
     //% pin.defl=AnalogPin.P1
-        export function calibrateTurbidity(pin: AnalogPin): void {
+    export function calibrateTurbidity(pin: AnalogPin): void {
         let index = turbidityPins.indexOf(pin)
         if (index >= 0) clearWaterCounts[index] = 0
         let raw = BrixelInternal.calibrationAnalog(pin)

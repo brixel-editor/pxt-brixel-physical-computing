@@ -626,18 +626,8 @@ namespace AdvSensors {
     //% group="제스처(APDS9960)" weight=122
     //% blockHidden=true
     export function apds9960GetProximity(): number {
-        // ★ STATUS(0x93) 의 PVALID(bit1) 로 근접 변환 완료를 확인한다
-        let wait = 20
-        while (wait > 0) {
-            pins.i2cWriteNumber(_apds9960Addr, 0x93, NumberFormat.UInt8BE, true)
-            let st = pins.i2cReadNumber(_apds9960Addr, NumberFormat.UInt8BE)
-            if ((st & 0x02) != 0) break
-            basic.pause(5)
-            wait--
-        }
-        pins.i2cWriteNumber(_apds9960Addr, 0x9C, NumberFormat.UInt8BE, true)
-        _apds9960Proximity = pins.i2cReadNumber(_apds9960Addr, NumberFormat.UInt8BE)
-        return _apds9960Proximity
+        // v0.6.0: 사이언스랩 근접 원시값 0~255(뒤에서 계속 읽음). 연결 안 됨·첫 값 전 = -1
+        return slxDetection.gestureProximity()
     }
 
     //% block="APDS9960 gesture detected"
@@ -668,15 +658,10 @@ namespace AdvSensors {
 
     //% block="APDS9960 init"
     //% group="제스처(APDS9960)" weight=119
-        export function apds9960Init(): void {
-        gestureCachedAt = -1000
-        _apds9960GestureLatchMs = -1000
-        // ENABLE(0x80) = PON|AEN|PEN|WEN|GEN (0x4F)
-        // ★ 레지스터 주소와 데이터는 반드시 한 트랜잭션으로 보내야 한다.
-        //   i2cWriteNumber 를 두 번 부르면 각각 START…STOP 으로 끝나서
-        //   두 번째 바이트가 데이터가 아니라 '다음 레지스터 주소'로 해석된다(= 설정이 안 실림).
-        pins.i2cWriteNumber(_apds9960Addr, 0x804F, NumberFormat.UInt16BE)
-        basic.pause(10)
+    export function apds9960Init(): void {
+        // v0.6.0: 사이언스랩 손짓 감지(실기 검증 — DSL마빗 펌웨어 v6.3·v6.5)를 뒤에서 돌리기 시작한다.
+        //   브릭셀 모듈은 호환 칩(ID 0xA8). 왼쪽·오른쪽은 맞고, 위·아래는 이 모듈에서 구분되지 않는다.
+        slxDetection.gestureProximity()
     }
 
     /** v0.5.1 gesture as a word: 없음·위·아래·왼쪽·오른쪽. Run «APDS9960 init» once first. Pass the hand once, 5~15 cm above. On the BRIXEL module only left/right are reliable — up and down are not told apart. */
@@ -699,9 +684,9 @@ namespace AdvSensors {
     //% group="제스처(APDS9960)" weight=118
     //% blockHidden=true
     export function apds9960ReadGesture(): APDS9960Gesture {
-        let value = apds9960ReadGestureRaw()
-        if (value != APDS9960Gesture.None) { gestureCached = value; gestureCachedAt = control.millis() }
-        return control.millis() - gestureCachedAt <= 400 ? gestureCached : APDS9960Gesture.None
+        // v0.6.0: 사이언스랩 손짓(0 없음 1 위 2 아래 3 왼쪽 4 오른쪽 — 한 번 읽으면 지워지고 1초 지나면 사라짐). 연결 안 됨 = 없음
+        let d = slxDetection.gestureDirection()
+        return d < 1 || d > 4 ? APDS9960Gesture.None : <APDS9960Gesture>d
     }
     let gestureCached = APDS9960Gesture.None
     let gestureCachedAt = -1000
@@ -777,8 +762,8 @@ namespace AdvSensors {
     //% group="제스처(APDS9960)" weight=117
     //% blockHidden=true
     export function apds9960ReadProximity(): number {
-        pins.i2cWriteNumber(_apds9960Addr, 0x9C, NumberFormat.UInt8BE)
-        return pins.i2cReadNumber(_apds9960Addr, NumberFormat.UInt8BE)
+        // v0.6.0: 사이언스랩 근접 원시값 0~255. 연결 안 됨·첫 값 전 = -1
+        return slxDetection.gestureProximity()
     }
 
     //% block="APDS9960 color read %color"
@@ -849,71 +834,19 @@ namespace AdvSensors {
 
     //% block="Heart rate sensor setup"
     //% group="심박(MAX30102)" weight=110
-        export function heartRateSetup(): void {
-        _hrLastSampleMs = 0
-        _hrFingerDetected = false
-        _hrIRLED = 0
-        _hrRedLED = 0
-        _hrHeartRate = 0
-        _hrSpO2 = 0
-        _hrAddr = 0x57
-
-        // 소프트 리셋
-        pins.i2cWriteNumber(_hrAddr, 0x0940, NumberFormat.UInt16BE)
-        basic.pause(100)
-
-        // FIFO 설정 (샘플 평균 4, FIFO 롤오버 활성화)
-        pins.i2cWriteNumber(_hrAddr, 0x0850, NumberFormat.UInt16BE)
-
-        // 모드 설정 (SpO2 모드)
-        pins.i2cWriteNumber(_hrAddr, 0x0903, NumberFormat.UInt16BE)
-        // ★ 레지스터만 바꾸고 캐시(_hrMode)를 갱신하지 않아서, setPower(심박)로 HR 모드를
-        //   쓴 뒤 다시 setup 을 부르면 칩은 6바이트/샘플인데 드라이버는 3바이트만 읽어
-        //   FIFO 경계가 어긋났다.
-        _hrMode = 3
-
-        // SpO2 설정 (ADC 범위 4096, 샘플 레이트 100, 펄스 폭 411us)
-        // (아두이노 setup() 기본값은 400sps 다. micro:bit 는 I2C 처리량과 파이버 주기를 고려해
-        //  100sps 로 낮춰 쓴다 — 유효 샘플레이트는 평균 4 를 거쳐 25sps.
-        //  ADC 범위 4096 과 펄스폭 411us(18비트)는 아두이노와 동일하다.)
-        pins.i2cWriteNumber(_hrAddr, 0x0A27, NumberFormat.UInt16BE)
-
-        // LED 전류 설정
-        // ★ 아두이노 setup() 은 powerLevel 기본값 0x1F(6.4mA)를 RED/IR/GREEN/PROX 전부에 건다.
-        //   0x24 는 근거 없는 값이었고, 'Finger detected' 가 쓰는 50000 문턱은 IR=0x1F 로
-        //   측정된 아두이노 쪽에서 온 숫자라 IR 구동 전류가 같아야 의미가 맞는다.
-        //   (아두이노 스케치는 그 뒤 RED 를 0x0A 로 더 낮추지만, 그 스케치는 IR 만 읽는다.
-        //    micro:bit 의 SpO2 경로는 RED 의 맥동 성분을 실제로 쓰므로 RED 도 0x1F 로 둔다.)
-        pins.i2cWriteNumber(_hrAddr, 0x0C1F, NumberFormat.UInt16BE)
-        pins.i2cWriteNumber(_hrAddr, 0x0D1F, NumberFormat.UInt16BE)
-
-        // ★ 아두이노 setup() 의 마지막 문장은 clearFIFO() 다(MAX30105.cpp).
-        //   MODE 를 쓰는 순간 변환이 시작되므로, 설정이 끝나기 전에 찍힌 샘플들은
-        //   LED 가 꺼져 있고 ADC 설정도 다른 '깜깜한 프레임'이다. 포인터 3개를 0 으로
-        //   되돌려 첫 읽기가 반드시 설정 이후 샘플이 되도록 한다.
-        pins.i2cWriteNumber(_hrAddr, 0x0400, NumberFormat.UInt16BE)   // FIFO_WR_PTR = 0
-        pins.i2cWriteNumber(_hrAddr, 0x0500, NumberFormat.UInt16BE)   // OVF_COUNTER = 0
-        pins.i2cWriteNumber(_hrAddr, 0x0600, NumberFormat.UInt16BE)   // FIFO_RD_PTR = 0
-
+    export function heartRateSetup(): void {
+        // v0.6.0: 사이언스랩 심박(실기 검증)을 뒤에서 돌리기 시작한다. 옛 설정(SpO2 모드)은 쓰지 않는다 —
+        //   두 방식이 같은 FIFO 를 꺼내 가면 박동을 놓친다. (숨긴 «SpO2»·«박동 감지» 블록은 옛 방식이라 이것과 함께 쓰지 말 것)
+        slxBio.fingerOn()
         _hrReady = true
         _hrSetupMs = control.millis()
-        _hrBeatTimes = []
-        _hrBeatCount = 0
-        basic.pause(100)
     }
 
     //% block="Finger detected"
     //% group="심박(MAX30102)" weight=109
-        export function heartRateFingerDetected(): boolean {
-        // ★ 이 블록은 'forever' 안에서 BPM/SpO2 블록을 감싸는 데 거의 항상 쓰인다.
-        //   그런데 FIFO 는 꺼내면 사라지는 공유 자원이라, 샘플러가 도는 동안 여기서
-        //   또 꺼내면 박동 검출기가 받는 샘플이 절반으로 줄어든다.
-        //   샘플러가 20ms 마다 _hrFingerDetected 를 갱신하므로 그 값을 읽기만 한다.
-        if (_hrSamplerOn) return hrFresh() && _hrFingerDetected
-        heartRateReadRaw()
-        // IR 값이 일정 수준 이상이면 손가락 감지
-        _hrFingerDetected = hrFresh() && _hrIRLED > 50000
-        return _hrFingerDetected
+    export function heartRateFingerDetected(): boolean {
+        // v0.6.0: 사이언스랩 — 적외선 ≥ 50000 이면 손가락
+        return slxBio.fingerOn()
     }
 
     /*
@@ -1033,23 +966,10 @@ namespace AdvSensors {
 
     //% block="Heart rate read (BPM)"
     //% group="심박(MAX30102)" weight=108
-        export function heartRateGetBPM(): number {
-        hrEnsureSampler()
-        if (!hrFresh() || !_hrFingerDetected) return 0
-
-        if (_hrBeatTimes.length >= 3) {                    // 최소 3박 모여야 값을 낸다
-            let sum = 0
-            for (let i = 0; i < _hrBeatTimes.length; i++) sum += _hrBeatTimes[i]
-            let avg = sum / _hrBeatTimes.length
-            let bpm = Math.round(60000 / avg)
-            // ★ 위 hrProcessSample 이 이미 300~2000ms(=30~200 BPM) 간격만 채택하므로
-            //   여기서 40 미만을 다시 버리면, 30~40 BPM 은 어차피 나올 수 없는데도
-            //   한 번 더 잘라내는 셈이었다(두 문턱이 서로 어긋나 있었다).
-            //   아두이노의 최종 게이트는 20~255 BPM 이라 훨씬 넓다 — 여기서는 채택 창과
-            //   같은 30~200 으로만 맞춘다.
-            _hrHeartRate = (bpm < 30 || bpm > 200) ? 0 : bpm
-        }
-        return _hrHeartRate
+    export function heartRateGetBPM(): number {
+        // v0.6.0: 사이언스랩 심박수(0.02초마다 적외선, 느린 평균을 빼고 맥박 간격 0.3~2초를 4번 평균). 값 없음 = 0(옛 블록과 같음)
+        let b = slxBio.heartRate()
+        return b < 0 ? 0 : b
     }
 
     //% block="SpO2 read (\\%)"

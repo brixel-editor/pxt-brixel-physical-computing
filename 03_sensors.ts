@@ -36,6 +36,13 @@ namespace Sensors03 {
     //% block="HC-SR04 read distance unit %unit"
     //% group="초음파(HC-SR04)" weight=229
     export function hcsr04Read(unit: DistanceUnit): number {
+        // v0.6.0: 사이언스랩의 실기 검증 측정(C++ 폴링 + 3번 재시도 — V2 에서 pulseIn 은 응답을 못 내 0·-1 이 나왔다,
+        //   DSL마빗 펌웨어 v3.2 와 같은 길). 사이언스랩이 못 받는 핀(P3·P4·P6·P7·P10 등)만 아래 옛 방식.
+        if (slxInternal.validDigital(_hcsr04Trig) && slxInternal.validDigital(_hcsr04Echo) && _hcsr04Trig != _hcsr04Echo) {
+            let cmS = slxDetection.ultrasonic(<SlxDigitalPin><number>_hcsr04Trig, <SlxDigitalPin><number>_hcsr04Echo)
+            if (cmS < 0) return -1
+            return unit == DistanceUnit.Inch ? Math.round(cmS / 2.54 * 100) / 100 : cmS
+        }
         // v0.4.0: 반향이 없으면(센서 없음·BLE 인터럽트로 펄스를 놓침) 60ms 쉬고 최대 3번까지 다시 잰다.
         //   60ms = 데이터시트의 측정 주기 권장값(앞 펄스의 잔향이 사라질 시간). 끝내 없으면 -1.
         //   pulseIn 시간 제한 30ms × 3 + 쉼 60ms × 2 → 센서가 없어도 최대 약 0.21초 안에 돌아온다.
@@ -147,6 +154,8 @@ namespace Sensors03 {
     //% group="온습도(DHT11/DHT22)" weight=223
     //% inlineInputMode=inline
     export function dhtQuery(dhtType: DHTType, pin: DigitalPin, pullUp: boolean, serialOut: boolean, wait: boolean): void {
+        // v0.6.0: 사이언스랩의 실기 검증 DHT 를 부른다(아래 dhtQuerySlx). 사이언스랩이 못 받는 핀(P3·P4 등)만 옛 방식.
+        if (slxInternal.validDigital(pin)) { dhtQuerySlx(dhtType, pin, serialOut, wait); return }
         // 아두이노 DHT::read() 는 버스를 건드리기 전에 MIN_INTERVAL(2000ms) 을 스스로 강제하고
         // 너무 빨리 부르면 직전 결과를 그대로 돌려준다(DHT.cpp:123-130). MakeCode 는 이걸
         // 'Wait 2 sec after query' 토글로만 두고 질의 뒤에 쉬게 해서, 토글을 끄거나 두 곳에서
@@ -247,6 +256,30 @@ namespace Sensors03 {
         }
     }
 
+    // v0.6.0 (운영자 지시 10-18): 사이언스랩 slxWeather.dht — 비트 시간을 C++ 로 재고, 핀마다 2초 캐시, 3번 연속 실패 전엔 마지막 값.
+    //   그 위에 핀마다 마지막 좋은 값을 30초 유지(DSL마빗 펌웨어 v4.8·v4.9 와 같은 길 — 실기 E23~E27).
+    //   «Last query successful?» = 값이 있음(30초 안의 좋은 값 포함) · «sensor responding?» = 이번에 새로 읽힘.
+    function dhtQuerySlx(dhtType: DHTType, pin: DigitalPin, serialOut: boolean, wait: boolean): void {
+        let md = dhtType == DHTType.DHT22 ? SlxDHTModel.DHT22 : SlxDHTModel.DHT11
+        let tv = slxWeather.dht(md, <SlxDigitalPin><number>pin, SlxClimateValue.Temperature)
+        let hv = slxWeather.dht(md, <SlxDigitalPin><number>pin, SlxClimateValue.Humidity)
+        let key = <number>pin * 100 + <number>dhtType
+        let slot = _dhtPins.indexOf(key)
+        if (slot < 0) { slot = _dhtPins.length; _dhtPins.push(key); _dhtAt.push(-100000); _dhtT.push(-127); _dhtH.push(-1); _dhtOk.push(false) }
+        let now = control.millis()
+        _dhtSensorResponding = tv > -100 && hv >= 0
+        if (_dhtSensorResponding) { _dhtT[slot] = tv; _dhtH[slot] = hv; _dhtAt[slot] = now; _dhtOk[slot] = true }
+        _dhtLastQuery = _dhtOk[slot] && now - _dhtAt[slot] <= 30000
+        _dhtTemperature = _dhtLastQuery ? _dhtT[slot] : -127
+        _dhtHumidity = _dhtLastQuery ? _dhtH[slot] : -1
+        _dhtLastReadTime = now
+        if (serialOut && _dhtLastQuery) {
+            serial.writeLine("Humidity: " + _dhtHumidity + "%")
+            serial.writeLine("Temperature: " + _dhtTemperature + "C")
+        }
+        if (wait) basic.pause(2000)
+    }
+
     //% block="Last query sensor responding?"
     //% group="온습도(DHT11/DHT22)" weight=222
     export function dhtSensorResponding(): boolean {
@@ -281,6 +314,14 @@ namespace Sensors03 {
     //% block="DS18B20 set data pin %pin"
     //% group="물온도(DS18B20)" weight=215
     export function ds18b20SetPin(pin: DigitalPin): void {
+        // v0.6.0: 사이언스랩의 실기 검증 1-Wire 드라이버(slxWaterDriver — DSL마빗 펌웨어 v4.7 과 같은 길). 못 받는 핀만 옛 드라이버.
+        if (slxInternal.validDigital(pin)) {
+            _ds18b20Pin = pin
+            slxInternal.prepare(pin)
+            slxWaterDriver.ds18b20SetPin(pin)
+            _ds18b20Count = slxWaterDriver.ds18b20GetCount()
+            return
+        }
         _ds18b20Pin = pin
         // 1-Wire 는 오픈드레인이다. 라인을 놓을 때 외부 4.7k 풀업이 올려 주지만,
         // 모듈에 풀업이 없거나 약할 때를 대비해 내부 풀업도 켜 둔다.
@@ -295,6 +336,16 @@ namespace Sensors03 {
     //% block="DS18B20 start conversion"
     //% group="물온도(DS18B20)" weight=214
     export function ds18b20StartConversion(): void {
+        if (dsUseSlx()) {
+            // v0.6.0: 앞 시도가 실패했으면 1초 쉬고(이게 회복에 필요 — 실기 E19·E22), 매번 다시 찾아(빼고 꽂아도 회복) 변환 0.75초
+            let since0 = control.millis() - _dsFailAt
+            if (since0 < 1000) basic.pause(1000 - since0)
+            slxInternal.prepare(_ds18b20Pin)
+            slxWaterDriver.ds18b20SetPin(_ds18b20Pin)
+            _ds18b20Count = slxWaterDriver.ds18b20GetCount()
+            if (!slxWaterDriver.ds18b20StartConversion()) _dsFailAt = control.millis()
+            return
+        }
         // 셋업 블록을 쓰지 않은 프로그램을 위해, 아직 열거 전이면 여기서 한 번 훑는다.
         // (예전에는 프레즌스만 보고 _ds18b20Count 를 1 로 조작해서, 프로브가 2개여도
         //  항상 1개라고 보고했다)
@@ -465,6 +516,7 @@ namespace Sensors03 {
     //% block="DS18B20 search sensors on bus"
     //% group="물온도(DS18B20)" weight=213.5
     export function ds18b20Search(): number {
+        if (dsUseSlx()) { _ds18b20Count = slxWaterDriver.ds18b20Search(); return _ds18b20Count }
         let found = 0
 
         // CRC 실패로 열거가 중간에 끊기면 실제보다 적은 개수를 보고하게 되므로
@@ -530,6 +582,13 @@ namespace Sensors03 {
     //% index.min=0 index.max=7 index.defl=0
     //% group="물온도(DS18B20)" weight=213
     export function ds18b20ReadTemp(index: number, unit: DS18B20Unit): number {
+        if (dsUseSlx()) {
+            // v0.6.0: 스크래치패드 CRC 가 깨지면(BLE·시리얼 인터럽트) 변환 없이 읽기만 3번까지
+            let v = -127
+            for (let a = 0; a < 3 && !(v >= -55 && v <= 125); a++)
+                v = slxWaterDriver.ds18b20ReadTemp(Math.max(0, index), slxWaterDriver.DS18B20Unit.Celsius)
+            return dsKeepGood(index, v >= -55 && v <= 125, v, unit)
+        }
         // 프레즌스 결과를 버리면 안 된다. 센서가 없을 때 0xFF/0xFF 를 읽어
         // -0.06°C 라는 그럴듯한 가짜 값이 나오기 때문.
         // ★ 실패값으로 0 을 쓰면 안 된다 — 이건 '물온도' 블록이고 0°C(얼음물)는 교실에서
@@ -570,9 +629,25 @@ namespace Sensors03 {
         return tempC
     }
 
+    // v0.6.0: 핀이 사이언스랩 드라이버를 쓸 수 있나(P0·P1·P2·P8·P9·P12~P16)
+    function dsUseSlx(): boolean { return slxInternal.validDigital(_ds18b20Pin) }
+    // v0.5.0 규칙 그대로: 한두 번 실패는 마지막 좋은 값(10초까지) — 실패값(-127)이 좋은 값을 덮지 않게
+    function dsKeepGood(index: number, ok: boolean, tempC: number, unit: DS18B20Unit): number {
+        let gi = Math.max(0, index)
+        while (_dsGood.length <= gi) { _dsGood.push(-127); _dsGoodAt.push(-100000) }
+        if (ok) { _dsGood[gi] = tempC; _dsGoodAt[gi] = control.millis() }
+        else {
+            _dsFailAt = control.millis()
+            if (_dsGood[gi] > -100 && control.millis() - _dsGoodAt[gi] <= 10000) tempC = _dsGood[gi]
+            else return unit == DS18B20Unit.Fahrenheit ? -196.6 : -127
+        }
+        return unit == DS18B20Unit.Fahrenheit ? tempC * 9 / 5 + 32 : tempC
+    }
+
     //% block="DS18B20 connected sensor count"
     //% group="물온도(DS18B20)" weight=212
     export function ds18b20GetCount(): number {
+        if (dsUseSlx()) return slxWaterDriver.ds18b20GetCount()
         return _ds18b20Count
     }
 
