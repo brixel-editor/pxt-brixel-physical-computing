@@ -77,14 +77,12 @@ namespace Sensors03 {
     /** A_013/A_014 turbidity module signal to the selected micro:bit analog pin. Raw 0..1023, no calibration needed; not NTU. Signal must stay within 0..3.3V and board supply. Invalid pin=-1; disconnection cannot be reliably detected. */
     //%  block="turbidity sensor pin $pin raw value" group="탁도(Turbidity)" weight=90
     //% pin.defl=AnalogPin.P1
-    //% blockHidden=true
-    export function turbidityRaw(pin: AnalogPin): number { return BrixelInternal.analog(pin) }
+        export function turbidityRaw(pin: AnalogPin): number { return BrixelInternal.analog(pin) }
 
     /** Put the probe in clear water, shield ambient light and capture the selected analog input. Raw 5..1022 required. Invalid recalibration clears the old reference on that pin. Calibration resets on program restart. */
     //%  block="turbidity sensor pin $pin calibrate clear water" group="탁도(Turbidity)" weight=70
     //% pin.defl=AnalogPin.P1
-    //% blockHidden=true
-    export function calibrateTurbidity(pin: AnalogPin): void {
+        export function calibrateTurbidity(pin: AnalogPin): void {
         let index = turbidityPins.indexOf(pin)
         if (index >= 0) clearWaterCounts[index] = 0
         let raw = BrixelInternal.calibrationAnalog(pin)
@@ -105,6 +103,16 @@ namespace Sensors03 {
         if (raw < 0 || raw >= 1023) return -1
         let result = raw * 100 / clear
         return result <= 120 ? Math.round(result) : -1
+    }
+    /** v0.5.1 cloudiness 0..100% = (clear − now) ÷ clear: clear water ≈ 0%, milk ≈ 90%. Clear water = your «calibrate clear water» value, otherwise 800 (BRIXEL AZDM01 on the 5V port P10 — the shield divides that port, the signal stays under 3.3V). -1 = invalid pin. */
+    //%  block="turbidity sensor pin $pin cloudiness (percent)" group="탁도(Turbidity)" weight=85
+    //% pin.defl=AnalogPin.P10
+    export function turbidityCloudiness(pin: AnalogPin): number {
+        let index = turbidityPins.indexOf(pin)
+        let clear = index < 0 || clearWaterCounts[index] <= 0 ? 800 : clearWaterCounts[index]
+        let raw = turbidityRaw(pin)
+        if (raw < 0) return -1
+        return Math.max(0, Math.min(100, Math.round((clear - raw) * 100 / clear)))
     }
 }
 

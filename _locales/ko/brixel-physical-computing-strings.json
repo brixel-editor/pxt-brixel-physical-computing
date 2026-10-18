@@ -879,5 +879,8 @@
   "BrixelJoystickDir.Down|block": "아래",
   "BrixelJoystickDir.Left|block": "왼쪽",
   "BrixelJoystickDir.Right|block": "오른쪽",
-  "Sensors03.joystickXYIs|block": "조이스틱 X $px Y $py 방향이 $dir 인가?"
+  "Sensors03.joystickXYIs|block": "조이스틱 X $px Y $py 방향이 $dir 인가?",
+  "Sensors03.turbidityCloudiness|block": "탁도 센서 핀 $pin 탁한 정도(%)",
+  "AdvSensors.tcs34725ColorName|block": "색상 센서 색 이름",
+  "AdvSensors.apds9960GestureName|block": "APDS9960 제스처 방향 이름"
 }

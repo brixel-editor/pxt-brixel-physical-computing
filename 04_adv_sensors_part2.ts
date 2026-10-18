@@ -55,6 +55,15 @@ namespace AdvSensors {
         }
         return _tcs34725DetectedColor
     }
+    /** v0.5.1 color as a word: 빨강·주황·노랑·초록·파랑·보라·흰색·검정, «없음» when the sensor is not connected. Hold the object about 1 cm in front. */
+    //% block="Color sensor color name"
+    //% group="색상감지(TCS34725)" weight=134
+    export function tcs34725ColorName(): string {
+        let n = tcs34725Detect(TCS34725DetectType.Color)
+        if (n < 0 || n > 7) return "없음"
+        return ["빨강", "주황", "노랑", "초록", "파랑", "보라", "흰색", "검정"][n]
+    }
+
 
     //% block="Color sensor %channel (0~255)"
     //% channel.defl=AdvSensors.TCS34725Channel.Red
@@ -659,8 +668,7 @@ namespace AdvSensors {
 
     //% block="APDS9960 init"
     //% group="제스처(APDS9960)" weight=119
-    //% blockHidden=true
-    export function apds9960Init(): void {
+        export function apds9960Init(): void {
         gestureCachedAt = -1000
         _apds9960GestureLatchMs = -1000
         // ENABLE(0x80) = PON|AEN|PEN|WEN|GEN (0x4F)
@@ -669,6 +677,13 @@ namespace AdvSensors {
         //   두 번째 바이트가 데이터가 아니라 '다음 레지스터 주소'로 해석된다(= 설정이 안 실림).
         pins.i2cWriteNumber(_apds9960Addr, 0x804F, NumberFormat.UInt16BE)
         basic.pause(10)
+    }
+
+    /** v0.5.1 gesture as a word: 없음·위·아래·왼쪽·오른쪽. Run «APDS9960 init» once first. Pass the hand once, 5~15 cm above. On the BRIXEL module only left/right are reliable — up and down are not told apart. */
+    //% block="APDS9960 gesture name"
+    //% group="제스처(APDS9960)" weight=119
+    export function apds9960GestureName(): string {
+        return ["없음", "위", "아래", "왼쪽", "오른쪽"][apds9960ReadGesture()]
     }
 
     /*
@@ -834,8 +849,7 @@ namespace AdvSensors {
 
     //% block="Heart rate sensor setup"
     //% group="심박(MAX30102)" weight=110
-    //% blockHidden=true
-    export function heartRateSetup(): void {
+        export function heartRateSetup(): void {
         _hrLastSampleMs = 0
         _hrFingerDetected = false
         _hrIRLED = 0
@@ -890,8 +904,7 @@ namespace AdvSensors {
 
     //% block="Finger detected"
     //% group="심박(MAX30102)" weight=109
-    //% blockHidden=true
-    export function heartRateFingerDetected(): boolean {
+        export function heartRateFingerDetected(): boolean {
         // ★ 이 블록은 'forever' 안에서 BPM/SpO2 블록을 감싸는 데 거의 항상 쓰인다.
         //   그런데 FIFO 는 꺼내면 사라지는 공유 자원이라, 샘플러가 도는 동안 여기서
         //   또 꺼내면 박동 검출기가 받는 샘플이 절반으로 줄어든다.
@@ -1020,8 +1033,7 @@ namespace AdvSensors {
 
     //% block="Heart rate read (BPM)"
     //% group="심박(MAX30102)" weight=108
-    //% blockHidden=true
-    export function heartRateGetBPM(): number {
+        export function heartRateGetBPM(): number {
         hrEnsureSampler()
         if (!hrFresh() || !_hrFingerDetected) return 0
 
