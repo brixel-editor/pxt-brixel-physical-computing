@@ -60,6 +60,9 @@ namespace AdvSensors {
     //% channel.defl=AdvSensors.TCS34725Channel.Red
     //% group="색상감지(TCS34725)" weight=132
     export function tcs34725GetChannel(channel: TCS34725Channel): number {
+        // v0.5.0 (DSL마빗 실기 v5.8): 예전엔 마지막 «색 판정» 때 값만 돌려줘 처음엔 늘 0 — 이제 매번 읽는다(센서 없음 = -1)
+        if (!tcs34725ReadRaw()) return -1
+        tcs34725Normalize()
         if (channel == TCS34725Channel.Red) return _tcs34725R8
         if (channel == TCS34725Channel.Green) return _tcs34725G8
         if (channel == TCS34725Channel.Blue) return _tcs34725B8

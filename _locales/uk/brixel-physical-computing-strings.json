@@ -340,7 +340,7 @@
   "AdvSensors.adxl345Init|block": "ADXL345 ініціалізація адреси %addr",
   "AdvSensors.adxl345Read|block": "ADXL345 читання прискорення вісь %axis",
   "AdvSensors.BMP280Type.Pressure|block": "тиск(гПа)",
-  "AdvSensors.BMP280Type.Temperature|block": "температура(°C)",
+  "AdvSensors.BMP280Type.Temperature|block": "chip temperature(°C)",
   "AdvSensors.bmp280Init|block": "BMP280 ініціалізація адреси %addr",
   "AdvSensors.bmp280Read|block": "BMP280 читати %btype",
   "AdvSensors.BME280Type.Pressure|block": "тиск(гПа)",

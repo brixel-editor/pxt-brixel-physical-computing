@@ -99,11 +99,12 @@ namespace Sensors03 {
     //% blockHidden=true
     export function turbidityTransmission(pin: AnalogPin): number {
         let index = turbidityPins.indexOf(pin)
-        if (index < 0 || clearWaterCounts[index] <= 0) return -1
+        // v0.5.0: 보정 전 기본 맑은 물 = 800 (브릭셀 AZDM01, 5V 포트 P10 실측 — DSL마빗 실기 E18)
+        let clear = index < 0 || clearWaterCounts[index] <= 0 ? 800 : clearWaterCounts[index]
         let raw = turbidityRaw(pin)
         if (raw < 0 || raw >= 1023) return -1
-        let result = raw * 100 / clearWaterCounts[index]
-        return result <= 120 ? result : -1
+        let result = raw * 100 / clear
+        return result <= 120 ? Math.round(result) : -1
     }
 }
 

@@ -340,7 +340,7 @@
   "AdvSensors.adxl345Init|block": "ADXL345 අරඹන්න ලිපිනය %addr",
   "AdvSensors.adxl345Read|block": "ADXL345 ත්වරණය කියවන්න අක්ෂය %axis",
   "AdvSensors.BMP280Type.Pressure|block": "පීඩනය(hPa)",
-  "AdvSensors.BMP280Type.Temperature|block": "උෂ්ණත්වය(°C)",
+  "AdvSensors.BMP280Type.Temperature|block": "chip temperature(°C)",
   "AdvSensors.bmp280Init|block": "BMP280 අරඹන්න ලිපිනය %addr",
   "AdvSensors.bmp280Read|block": "BMP280 කියවන්න %btype",
   "AdvSensors.BME280Type.Pressure|block": "පීඩනය(hPa)",

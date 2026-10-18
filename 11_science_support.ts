@@ -1,5 +1,49 @@
 // Adapted from BRIXEL Science Lab v0.6.1 (MIT). See SOURCES.md.
+enum BrixelMagnetPole {
+    //% block="N"
+    North = 0,
+    //% block="S"
+    South = 1,
+    //% block="none"
+    None = 2
+}
+enum BrixelLineRef {
+    //% block="white"
+    White = 0,
+    //% block="black line"
+    Black = 1
+}
+enum BrixelJoystickDir {
+    //% block="centre"
+    Center = 0,
+    //% block="up"
+    Up = 1,
+    //% block="down"
+    Down = 2,
+    //% block="left"
+    Left = 3,
+    //% block="right"
+    Right = 4
+}
 namespace BrixelInternal {
+    // v0.5.0 해석 값 공통: 원시값을 lo..hi 사이 0..100%(정수, 범위 밖은 자름). 잘못된 핀 = -1
+    export function percentOf(pin: AnalogPin, lo: number, hi: number): number {
+        let v = analog(pin)
+        if (v < 0) return -1
+        return Math.max(0, Math.min(100, Math.round((v - lo) * 100 / (hi - lo))))
+    }
+    // v0.5.0 흔들림 폭: n 번 읽는 동안 최댓값 − 최솟값(gapUs 마이크로초 간격). 잘못된 핀 = -1
+    export function swing(pin: AnalogPin, n: number, gapUs: number): number {
+        let hi = 0, lo = 1023
+        for (let k = 0; k < n; k++) {
+            let v = analog(pin)
+            if (v < 0) return -1
+            if (v > hi) hi = v
+            if (v < lo) lo = v
+            control.waitMicros(gapUs)
+        }
+        return hi - lo
+    }
     export function validDigital(pin: number): boolean {
         return pin == DigitalPin.P0 || pin == DigitalPin.P1 || pin == DigitalPin.P2 ||
             pin == DigitalPin.P8 || pin == DigitalPin.P9 || pin == DigitalPin.P12 ||

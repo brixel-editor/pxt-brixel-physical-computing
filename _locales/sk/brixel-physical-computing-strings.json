@@ -340,7 +340,7 @@
   "AdvSensors.adxl345Init|block": "ADXL345 inicializovať adresa %addr",
   "AdvSensors.adxl345Read|block": "ADXL345 prečítať zrýchlenie os %axis",
   "AdvSensors.BMP280Type.Pressure|block": "tlak(hPa)",
-  "AdvSensors.BMP280Type.Temperature|block": "teplota(°C)",
+  "AdvSensors.BMP280Type.Temperature|block": "chip temperature(°C)",
   "AdvSensors.bmp280Init|block": "BMP280 inicializovať adresa %addr",
   "AdvSensors.bmp280Read|block": "BMP280 prečítať %btype",
   "AdvSensors.BME280Type.Pressure|block": "tlak(hPa)",

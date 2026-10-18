@@ -1,6 +1,6 @@
 {
   "name": "brixel-physical-computing",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "BRIXEL physical computing (USB/wired): sensors safe on the micro:bit Shield V2, displays, motors, outputs and serial/WiFi communications",
   "license": "MIT",
   "dependencies": {

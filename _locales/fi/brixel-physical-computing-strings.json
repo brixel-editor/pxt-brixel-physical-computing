@@ -340,7 +340,7 @@
   "AdvSensors.adxl345Init|block": "ADXL345 alusta osoite %addr",
   "AdvSensors.adxl345Read|block": "ADXL345 kiihtyvyyden luku akseli %axis",
   "AdvSensors.BMP280Type.Pressure|block": "paine(hPa)",
-  "AdvSensors.BMP280Type.Temperature|block": "lämpötila(°C)",
+  "AdvSensors.BMP280Type.Temperature|block": "chip temperature(°C)",
   "AdvSensors.bmp280Init|block": "BMP280 alusta osoite %addr",
   "AdvSensors.bmp280Read|block": "BMP280 lue %btype",
   "AdvSensors.BME280Type.Pressure|block": "paine(hPa)",

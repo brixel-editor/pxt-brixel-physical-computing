@@ -310,7 +310,7 @@
   "AdvSensors.adxl345Init|block": "ADXL345 cychwyn cyfeiriad %addr",
   "AdvSensors.adxl345Read|block": "ADXL345 darllen cyflymiad echel %axis",
   "AdvSensors.BMP280Type.Pressure|block": "gwasgedd(hPa)",
-  "AdvSensors.BMP280Type.Temperature|block": "tymheredd(°C)",
+  "AdvSensors.BMP280Type.Temperature|block": "chip temperature(°C)",
   "AdvSensors.bmp280Init|block": "BMP280 cychwyn cyfeiriad %addr",
   "AdvSensors.bmp280Read|block": "BMP280 darllen %btype",
   "AdvSensors.BME280Type.Pressure|block": "gwasgedd(hPa)",

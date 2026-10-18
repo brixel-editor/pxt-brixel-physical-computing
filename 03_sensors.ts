@@ -100,6 +100,12 @@ namespace Sensors03 {
     let _dhtTempUnit: TempUnit = TempUnit.Celsius
     // 아두이노 DHT.cpp:9 의 MIN_INTERVAL(2000ms) 과 같은 역할. 음수로 시작해 첫 호출은 통과한다.
     let _dhtLastReadTime: number = -2000
+    // v0.5.0 핀별 캐시
+    let _dhtPins: number[] = []
+    let _dhtAt: number[] = []
+    let _dhtT: number[] = []
+    let _dhtH: number[] = []
+    let _dhtOk: boolean[] = []
 
     // 핀이 지정한 레벨에서 벗어날 때까지 대기. 타임아웃이면 false.
     // 기존 코드는 while(...); 형태의 무한 busy-wait이라 센서가 없으면 fiber가 영원히 멈췄다.
@@ -145,9 +151,15 @@ namespace Sensors03 {
         // 너무 빨리 부르면 직전 결과를 그대로 돌려준다(DHT.cpp:123-130). MakeCode 는 이걸
         // 'Wait 2 sec after query' 토글로만 두고 질의 뒤에 쉬게 해서, 토글을 끄거나 두 곳에서
         // 부르면 센서 변환 주기보다 빨리 폴링해 체크섬이 계속 깨졌다. 라이브러리와 동일하게 막는다.
-        if (control.millis() - _dhtLastReadTime < 2000) {
-            return   // _dhtTemperature/_dhtHumidity/_dhtLastQuery 를 그대로 유지 (아두이노의 _lastresult 반환과 동일)
+        // v0.5.0 (DSL마빗 실기 E23~E26): 2초 제한·마지막 값을 «핀마다» 따로 둔다 — 예전엔 하나뿐이라
+        //   DHT 두 개를 번갈아 읽으면 두 번째 센서가 첫 센서 값을 그대로 받았다.
+        let slot = _dhtPins.indexOf(<number>pin)
+        if (slot < 0) { slot = _dhtPins.length; _dhtPins.push(<number>pin); _dhtAt.push(-2000); _dhtT.push(-127); _dhtH.push(-1); _dhtOk.push(false) }
+        if (control.millis() - _dhtAt[slot] < 2000) {
+            _dhtTemperature = _dhtT[slot]; _dhtHumidity = _dhtH[slot]; _dhtLastQuery = _dhtOk[slot]
+            return
         }
+        _dhtAt[slot] = control.millis()
         _dhtLastReadTime = control.millis()
 
         _dhtLastQuery = false
@@ -226,6 +238,10 @@ namespace Sensors03 {
             }
         }
 
+        // v0.5.0: 이 핀의 결과 저장(실패면 이 핀의 마지막 좋은 값을 그대로 둔다)
+        if (_dhtLastQuery) { _dhtT[slot] = _dhtTemperature; _dhtH[slot] = _dhtHumidity; _dhtOk[slot] = true }
+        else { _dhtTemperature = _dhtT[slot]; _dhtHumidity = _dhtH[slot] }
+
         if (wait) {
             basic.pause(2000)
         }
@@ -258,6 +274,9 @@ namespace Sensors03 {
     let _ds18b20Pin: DigitalPin = DigitalPin.P2
     let _ds18b20Temps: number[] = []
     let _ds18b20Count: number = 0
+    let _dsFailAt: number = -10000          // v0.5.0
+    let _dsGood: number[] = []
+    let _dsGoodAt: number[] = []
 
     //% block="DS18B20 set data pin %pin"
     //% group="물온도(DS18B20)" weight=215
@@ -281,8 +300,11 @@ namespace Sensors03 {
         //  항상 1개라고 보고했다)
         if (_ds18b20Count == 0) ds18b20Search()
 
+        // v0.5.0 (DSL마빗 실기 E19·E22): 바로 앞 시도가 실패했으면 1초가 지나야 다시 — 쉬지 않고 다시 찾으면 끝내 회복 못 했다
+        let since = control.millis() - _dsFailAt
+        if (since < 1000) basic.pause(1000 - since)
         // 1-Wire 리셋 (버스 유휴 확인 + 프레즌스 검출은 ds18b20Reset 이 담당)
-        if (!ds18b20Reset()) return
+        if (!ds18b20Reset()) { _dsFailAt = control.millis(); ds18b20Search(); return }
 
         // Skip ROM (0xCC) - 모든 센서에 명령
         ds18b20WriteByte(0xCC)
@@ -522,7 +544,14 @@ namespace Sensors03 {
             if (r == -1) break                 // 장치 없음·주소 없음 — 재시도해도 같다
             if (r == 1) sp = _dsScratch
         }
-        if (!sp) return unit == DS18B20Unit.Fahrenheit ? -196.6 : -127
+        if (!sp) {
+            // v0.5.0: 한두 번 실패는 마지막 좋은 값(10초까지) — 실패값이 좋은 값을 덮지 않게
+            _dsFailAt = control.millis()
+            let gi = Math.max(0, index)
+            if (gi < _dsGood.length && _dsGood[gi] > -100 && control.millis() - _dsGoodAt[gi] <= 10000)
+                return unit == DS18B20Unit.Fahrenheit ? _dsGood[gi] * 9 / 5 + 32 : _dsGood[gi]
+            return unit == DS18B20Unit.Fahrenheit ? -196.6 : -127
+        }
 
         // 온도 계산
         let temp = (sp[1] << 8) | sp[0]
@@ -531,6 +560,9 @@ namespace Sensors03 {
             temp = -temp
         }
         let tempC = temp / 16.0
+        let gj = Math.max(0, index)
+        while (_dsGood.length <= gj) { _dsGood.push(-127); _dsGoodAt.push(-100000) }
+        _dsGood[gj] = tempC; _dsGoodAt[gj] = control.millis()
 
         if (unit == DS18B20Unit.Fahrenheit) {
             return tempC * 9 / 5 + 32
@@ -1061,25 +1093,24 @@ namespace Sensors03 {
     //   LOW 면 -1(반시계방향). 기존 MakeCode 는 CLK 하강 에지 + 현재 DT 레벨을 써서 두 신호의
     //   역할이 뒤바뀌어 있었고, 그 결과 같은 배선/같은 회전에서 방향과 카운터 부호가 아두이노판과
     //   정반대로 나왔다(_locales 의 '시계방향' 라벨은 두 편집기가 같아서 차이가 그대로 보인다).
+    // v0.5.0 (DSL마빗 실기 E31): 전이표로 반 걸음씩 쌓고, 멈춤 자리(DT·CLK 둘 다 1)로 돌아올 때 ±2 이상이면 한 딸깍.
+    //   두 신호가 한꺼번에 바뀐 건 쌓지만 않는다(버리지 않음). 튐(3→1→3)은 +1−1 = 0.
+    //   예전 «DT 하강 에지 + CLK» 판정은 브릭셀 모듈에서 한 번도 세지 못했다.
+    const ROT_STEPS = [0, -1, 1, 0, 1, 0, 0, -1, -1, 0, 0, 1, 0, 1, -1, 0]
+    let _rotaryPartial: number = 0
     function rotarySample(): void {
         let newDT = pins.digitalReadPin(_rotaryDT)
         let newCLK = pins.digitalReadPin(_rotaryCLK)
-
-        if (newDT != _rotaryLastDT || newCLK != _rotaryLastCLK) {
-            // DT 하강 에지에서만 한 스텝
-            if (_rotaryLastDT == 1 && newDT == 0) {
-                if (_rotaryLastCLK == 1) {
-                    _rotaryCounter++
-                    _rotaryDirection = RotaryDir.CW
-                    _rotaryChange++
-                } else {
-                    _rotaryCounter--
-                    _rotaryDirection = RotaryDir.CCW
-                    _rotaryChange--
-                }
+        let prev = _rotaryLastDT * 2 + _rotaryLastCLK
+        let bits = newDT * 2 + newCLK
+        if (bits != prev) {
+            if ((bits ^ prev) != 3) _rotaryPartial += ROT_STEPS[prev * 4 + bits]
+            if (bits == 3) {
+                if (_rotaryPartial >= 2) { _rotaryCounter++; _rotaryDirection = RotaryDir.CW; _rotaryChange++ }
+                else if (_rotaryPartial <= -2) { _rotaryCounter--; _rotaryDirection = RotaryDir.CCW; _rotaryChange-- }
+                _rotaryPartial = 0
             }
         }
-
         _rotaryLastDT = newDT
         _rotaryLastCLK = newCLK
     }
@@ -1101,8 +1132,10 @@ namespace Sensors03 {
             led.enable(false)
         }
         // 모듈 기판의 풀업이 없는 맨 KY-040 대비
-        pins.setPull(clk, PinPullMode.PullUp)
-        pins.setPull(dt, PinPullMode.PullUp)
+        // v0.5.0: 풀 없음 — 브릭셀 로터리 엔코더는 내부 풀업을 걸면 LOW 가 내려가지 않았다(DSL마빗 실기 E31)
+        pins.setPull(clk, PinPullMode.PullNone)
+        pins.setPull(dt, PinPullMode.PullNone)
+        _rotaryPartial = 0
 
         _rotaryLastCLK = pins.digitalReadPin(clk)
         _rotaryLastDT = pins.digitalReadPin(dt)
@@ -1113,7 +1146,7 @@ namespace Sensors03 {
             control.inBackground(() => {
                 while (true) {
                     rotarySample()
-                    basic.pause(2)
+                    basic.pause(1)
                 }
             })
         }

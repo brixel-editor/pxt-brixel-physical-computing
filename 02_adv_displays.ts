@@ -188,9 +188,15 @@ namespace AdvDisplays {
     //% inlineInputMode=inline
     export function oledShowString(x: number, y: number, text: string, color: OLEDColor): void {
         oledSetCursor(x, y)
+        // v0.5.0 (DSL마빗 실기 v6.6): 줄(y 가 8의 배수)에 흰 글자를 쓸 때는 «덮어쓰기» — 옛 글자 위에 겹쳐 칠하지 않고
+        //   글 뒤를 그 줄 끝까지 지운다(지우기 블록 없이 숫자가 바뀌어도 깨끗). 줄 사이(y 가 8의 배수가 아님)는 예전처럼 겹쳐 그린다.
+        let over = (y & 7) == 0 && color == OLEDColor.White
+        _oledOverwrite = over
         for (let i = 0; i < text.length; i++) {
             oledWriteChar(text.charCodeAt(i), color)
         }
+        if (over) while (_oledCurCol < _oledWidth) oledPutByte(0, false)
+        _oledOverwrite = false
     }
 
     //% block="OLED number show x %x y %y number %num color %color"
@@ -356,6 +362,7 @@ namespace AdvDisplays {
      *   0 으로 되감겨 왼쪽 끝을 망가뜨리기 때문이다.
      */
     let _oledCurPage: number = 0
+    let _oledOverwrite: boolean = false   // v0.5.0 덮어쓰기 글쓰기 중
     let _oledCurCol: number = 0
     let _oledCurSeeked: boolean = false   // 하드웨어 열 포인터가 _oledCurCol 과 일치하는가
 
@@ -382,7 +389,7 @@ namespace AdvDisplays {
             _oledCurSeeked = true
         }
         let idx = _oledCurPage * _oledWidth + _oledCurCol
-        let merged = (erase ? (_oledBuf[idx] & ~b) : (_oledBuf[idx] | b)) & 0xFF
+        let merged = (_oledOverwrite ? b : (erase ? (_oledBuf[idx] & ~b) : (_oledBuf[idx] | b))) & 0xFF
         _oledBuf[idx] = merged
         oledData(merged)
         _oledCurCol++

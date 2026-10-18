@@ -340,7 +340,7 @@
   "AdvSensors.adxl345Init|block": "ADXL345 αρχικοποίηση διεύθυνση %addr",
   "AdvSensors.adxl345Read|block": "ADXL345 ανάγνωση επιτάχυνσης άξονας %axis",
   "AdvSensors.BMP280Type.Pressure|block": "πίεση(hPa)",
-  "AdvSensors.BMP280Type.Temperature|block": "θερμοκρασία(°C)",
+  "AdvSensors.BMP280Type.Temperature|block": "chip temperature(°C)",
   "AdvSensors.bmp280Init|block": "BMP280 αρχικοποίηση διεύθυνση %addr",
   "AdvSensors.bmp280Read|block": "BMP280 ανάγνωση %btype",
   "AdvSensors.BME280Type.Pressure|block": "πίεση(hPa)",

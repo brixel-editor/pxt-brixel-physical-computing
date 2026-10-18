@@ -340,7 +340,7 @@
   "AdvSensors.adxl345Init|block": "ADXL345 inicializálás cím %addr",
   "AdvSensors.adxl345Read|block": "ADXL345 gyorsulás olvasása tengely %axis",
   "AdvSensors.BMP280Type.Pressure|block": "nyomás(hPa)",
-  "AdvSensors.BMP280Type.Temperature|block": "hőmérséklet(°C)",
+  "AdvSensors.BMP280Type.Temperature|block": "chip temperature(°C)",
   "AdvSensors.bmp280Init|block": "BMP280 inicializálás cím %addr",
   "AdvSensors.bmp280Read|block": "BMP280 olvasás %btype",
   "AdvSensors.BME280Type.Pressure|block": "nyomás(hPa)",

@@ -340,7 +340,7 @@
   "AdvSensors.adxl345Init|block": "ADXL345 khởi tạo địa chỉ %addr",
   "AdvSensors.adxl345Read|block": "ADXL345 đọc gia tốc trục %axis",
   "AdvSensors.BMP280Type.Pressure|block": "áp suất(hPa)",
-  "AdvSensors.BMP280Type.Temperature|block": "nhiệt độ(°C)",
+  "AdvSensors.BMP280Type.Temperature|block": "chip temperature(°C)",
   "AdvSensors.bmp280Init|block": "BMP280 khởi tạo địa chỉ %addr",
   "AdvSensors.bmp280Read|block": "BMP280 đọc %btype",
   "AdvSensors.BME280Type.Pressure|block": "áp suất(hPa)",

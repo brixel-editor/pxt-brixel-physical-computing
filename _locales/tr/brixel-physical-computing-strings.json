@@ -340,7 +340,7 @@
   "AdvSensors.adxl345Init|block": "ADXL345 başlat I2C adresi %addr",
   "AdvSensors.adxl345Read|block": "ADXL345 ivme oku eksen %axis",
   "AdvSensors.BMP280Type.Pressure|block": "basınç(hPa)",
-  "AdvSensors.BMP280Type.Temperature|block": "sıcaklık(°C)",
+  "AdvSensors.BMP280Type.Temperature|block": "chip temperature(°C)",
   "AdvSensors.bmp280Init|block": "BMP280 başlat I2C adresi %addr",
   "AdvSensors.bmp280Read|block": "BMP280 oku %btype",
   "AdvSensors.BME280Type.Pressure|block": "basınç(hPa)",

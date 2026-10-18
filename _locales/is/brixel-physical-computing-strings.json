@@ -340,7 +340,7 @@
   "AdvSensors.adxl345Init|block": "ADXL345 frumstilla vistfang %addr",
   "AdvSensors.adxl345Read|block": "ADXL345 hröðun lesin ás %axis",
   "AdvSensors.BMP280Type.Pressure|block": "þrýstingur(hPa)",
-  "AdvSensors.BMP280Type.Temperature|block": "hitastig(°C)",
+  "AdvSensors.BMP280Type.Temperature|block": "chip temperature(°C)",
   "AdvSensors.bmp280Init|block": "BMP280 frumstilla vistfang %addr",
   "AdvSensors.bmp280Read|block": "BMP280 lesa %btype",
   "AdvSensors.BME280Type.Pressure|block": "þrýstingur(hPa)",

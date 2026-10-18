@@ -317,7 +317,7 @@ namespace AdvSensors {
     export enum BMP280Type {
         //% block="pressure(hPa)"
         Pressure = 0,
-        //% block="temperature(°C)"
+        //% block="chip temperature(°C)"
         Temperature = 1,
         //% block="altitude(m)"
         Altitude = 2
@@ -385,6 +385,8 @@ namespace AdvSensors {
         //   약 6배(≈2.6Pa → ≈16Pa RMS) 커져 마지막 자리가 눈에 띄게 흔들렸다.
         //   변환시간은 약 5.5ms → 약 40ms 로 늘지만 아래 basic.pause(100) 안쪽이다.
         pins.i2cWriteNumber(_bmp280Addr, 0xF43F, NumberFormat.UInt16BE)
+        // v0.5.0: 1초에 한 번 + IIR 4 — 쉼 없이 재면 칩이 데워져 온도가 +5℃ 높았다(DSL마빗 실기 10-18). 온도 = 칩 온도.
+        pins.i2cWriteNumber(_bmp280Addr, 0xF5A8, NumberFormat.UInt16BE)
         basic.pause(100)
     }
 

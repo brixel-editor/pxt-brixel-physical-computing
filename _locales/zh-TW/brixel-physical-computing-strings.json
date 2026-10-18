@@ -340,7 +340,7 @@
   "AdvSensors.adxl345Init|block": "ADXL345 初始化 位址 %addr",
   "AdvSensors.adxl345Read|block": "ADXL345 讀取加速度 軸向 %axis",
   "AdvSensors.BMP280Type.Pressure|block": "氣壓(hPa)",
-  "AdvSensors.BMP280Type.Temperature|block": "溫度(°C)",
+  "AdvSensors.BMP280Type.Temperature|block": "chip temperature(°C)",
   "AdvSensors.bmp280Init|block": "BMP280 初始化 位址 %addr",
   "AdvSensors.bmp280Read|block": "BMP280 讀取 %btype",
   "AdvSensors.BME280Type.Pressure|block": "氣壓(hPa)",

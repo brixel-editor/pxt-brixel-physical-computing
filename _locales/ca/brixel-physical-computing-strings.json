@@ -306,7 +306,7 @@
   "AdvSensors.adxl345Init|block": "ADXL345 inicialitza adreça %addr",
   "AdvSensors.adxl345Read|block": "ADXL345 llegeix acceleració eix %axis",
   "AdvSensors.BMP280Type.Pressure|block": "pressió (hPa)",
-  "AdvSensors.BMP280Type.Temperature|block": "temperatura (°C)",
+  "AdvSensors.BMP280Type.Temperature|block": "chip temperature(°C)",
   "AdvSensors.bmp280Init|block": "BMP280 inicialitza adreça %addr",
   "AdvSensors.bmp280Read|block": "BMP280 llegeix %btype",
   "AdvSensors.BME280Type.Pressure|block": "pressió (hPa)",
